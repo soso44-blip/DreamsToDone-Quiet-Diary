@@ -1,0 +1,1271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="manifest" href="manifest-light.webmanifest">
+  <meta name="theme-color" content="#FBF6EE">
+  <link rel="apple-touch-icon" href="apple-touch-icon-light.png">
+  <link rel="icon" type="image/png" href="favicon-48.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Quiet">
+  <script>if('serviceWorker' in navigator){addEventListener('load',function(){navigator.serviceWorker.register('sw.js').catch(function(){});});}</script>
+<title>Quiet — The ADHD Reset Journal &amp; Brain Dump</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400&family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   QUIET — design tokens
+   Warm "sanctuary" palette: grounding, premium, never clinical.
+   ============================================================ */
+:root{
+  --paper:#FBF6EE; --paper-2:#F4EADD; --card:#FFFDF9;
+  --ink:#3B342D; --ink-soft:#7C7268; --ink-faint:#A89C8F;
+  --clay:#CD8265; --clay-deep:#B96B4D; --clay-soft:#EFC3AC;
+  --sage:#8FA887; --sage-soft:#CBD7C4;
+  --gold:#E3B071; --gold-soft:#F2D9AE;
+  --lav:#A99CC0; --lav-soft:#D8CFE4;
+  --line:#EBDFCF;
+  --shadow:0 18px 50px -24px rgba(94,68,46,.35);
+  --shadow-sm:0 6px 22px -14px rgba(94,68,46,.45);
+  --r:26px; --r-sm:16px;
+  --serif:"Fraunces",Georgia,serif;
+  --sans:"Hanken Grotesk",system-ui,sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  font-family:var(--sans); color:var(--ink); line-height:1.55;
+  background:
+    radial-gradient(1100px 700px at 12% -8%, #F7E6D4 0%, transparent 55%),
+    radial-gradient(900px 650px at 100% 0%, #E9EFE2 0%, transparent 50%),
+    radial-gradient(900px 800px at 70% 110%, #EFE2EC 0%, transparent 55%),
+    var(--paper);
+  min-height:100vh; -webkit-font-smoothing:antialiased; overflow-x:hidden;
+}
+.app{max-width:720px; margin:0 auto; padding:26px 20px 120px; position:relative}
+
+/* grain overlay for warmth/depth */
+body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:9999;opacity:.05;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");}
+
+/* ---------- top bar ---------- */
+.topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:26px}
+.brand{display:flex;align-items:center;gap:11px;cursor:pointer}
+.brand .mark{width:38px;height:38px;border-radius:12px;background:linear-gradient(150deg,var(--clay),var(--gold));
+  display:grid;place-items:center;box-shadow:var(--shadow-sm)}
+.brand .mark span{width:13px;height:13px;border-radius:50%;background:var(--paper);box-shadow:inset 0 0 0 3px rgba(255,255,255,.5)}
+.brand b{font-family:var(--serif);font-weight:600;font-size:21px;letter-spacing:-.01em}
+.brand small{display:block;font-size:10.5px;color:var(--ink-faint);letter-spacing:.18em;text-transform:uppercase;font-weight:600;margin-top:-2px}
+.shown{font-size:12.5px;color:var(--ink-soft);background:var(--card);border:1px solid var(--line);
+  padding:8px 14px;border-radius:30px;font-weight:600;box-shadow:var(--shadow-sm)}
+.shown b{color:var(--clay-deep)}
+
+/* ---------- screens ---------- */
+.screen{display:none;animation:rise .5s cubic-bezier(.2,.8,.2,1) both}
+.screen.active{display:block}
+@keyframes rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+.stagger>*{opacity:0;animation:rise .55s cubic-bezier(.2,.8,.2,1) forwards}
+.stagger>*:nth-child(1){animation-delay:.04s}
+.stagger>*:nth-child(2){animation-delay:.10s}
+.stagger>*:nth-child(3){animation-delay:.16s}
+.stagger>*:nth-child(4){animation-delay:.22s}
+.stagger>*:nth-child(5){animation-delay:.28s}
+.stagger>*:nth-child(6){animation-delay:.34s}
+.stagger>*:nth-child(7){animation-delay:.40s}
+.stagger>*:nth-child(8){animation-delay:.46s}
+
+/* ---------- home hero ---------- */
+.hero{margin-bottom:22px}
+.hello{font-family:var(--serif);font-size:clamp(30px,7vw,42px);font-weight:500;letter-spacing:-.02em;line-height:1.08}
+.hello em{font-style:italic;color:var(--clay-deep)}
+.sub{color:var(--ink-soft);font-size:15.5px;margin-top:8px;max-width:46ch}
+
+/* mood check */
+.mood{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:20px 20px 22px;
+  box-shadow:var(--shadow);margin:18px 0 26px}
+.mood h3{font-size:14px;font-weight:600;color:var(--ink-soft);margin-bottom:14px}
+.moods{display:grid;grid-template-columns:repeat(5,1fr);gap:9px}
+.m{border:1px solid var(--line);background:var(--paper);border-radius:16px;padding:12px 6px;text-align:center;
+  cursor:pointer;transition:.25s cubic-bezier(.2,.8,.2,1);font-size:12px;font-weight:600;color:var(--ink-soft)}
+.m .e{font-size:24px;display:block;margin-bottom:5px;transition:.25s}
+.m:hover{transform:translateY(-3px);border-color:var(--clay-soft)}
+.m:hover .e{transform:scale(1.18)}
+.m.sel{background:linear-gradient(150deg,var(--clay-soft),var(--gold-soft));border-color:var(--clay);color:var(--ink)}
+.mood-reply{font-size:14px;color:var(--ink);margin-top:14px;padding:13px 15px;border-radius:14px;
+  background:var(--paper-2);display:none;line-height:1.5}
+.mood-reply.show{display:block;animation:rise .4s both}
+.mood-reply b{color:var(--clay-deep)}
+
+/* tool grid */
+.sec-label{font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--ink-faint);
+  font-weight:700;margin:6px 4px 14px}
+.group-note{font-size:12.5px;color:var(--ink-faint);font-style:italic;margin:-9px 4px 14px;max-width:52ch;line-height:1.45}
+.tools{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.tool{position:relative;border:1px solid var(--line);border-radius:var(--r);padding:20px 18px 18px;cursor:pointer;
+  background:var(--card);box-shadow:var(--shadow-sm);transition:.3s cubic-bezier(.2,.8,.2,1);overflow:hidden}
+.tool::before{content:"";position:absolute;inset:0;opacity:.5;transition:.3s;z-index:0}
+.tool>*{position:relative;z-index:1}
+.tool:hover{transform:translateY(-5px);box-shadow:var(--shadow);border-color:transparent}
+.tool .ic{width:46px;height:46px;border-radius:14px;display:grid;place-items:center;font-size:23px;margin-bottom:13px}
+.tool h4{font-family:var(--serif);font-size:19px;font-weight:600;letter-spacing:-.01em}
+.tool p{font-size:13px;color:var(--ink-soft);margin-top:4px;line-height:1.45}
+.tool .go{font-size:12.5px;font-weight:700;color:var(--clay-deep);margin-top:12px;display:inline-flex;align-items:center;gap:5px}
+.tool.big{grid-column:1/-1}
+.tool.big{background:linear-gradient(135deg,#fff 0%,var(--clay-soft) 140%)}
+.t-dump .ic{background:linear-gradient(150deg,var(--clay-soft),var(--gold-soft))}
+.t-spiral .ic{background:linear-gradient(150deg,var(--sage-soft),var(--lav-soft))}
+.t-heart .ic{background:linear-gradient(150deg,#f6cdd6,var(--clay-soft))}
+.t-win .ic{background:linear-gradient(150deg,var(--gold-soft),#ffe9bd)}
+.t-night .ic{background:linear-gradient(150deg,var(--lav-soft),#cdd6ea)}
+
+/* ---------- generic tool screen ---------- */
+.back{display:inline-flex;align-items:center;gap:7px;font-size:13.5px;font-weight:600;color:var(--ink-soft);
+  background:var(--card);border:1px solid var(--line);padding:9px 15px;border-radius:30px;cursor:pointer;
+  margin-bottom:18px;transition:.2s;box-shadow:var(--shadow-sm)}
+.back:hover{transform:translateX(-3px);color:var(--clay-deep)}
+.th{font-family:var(--serif);font-size:clamp(26px,6vw,34px);font-weight:500;letter-spacing:-.02em;line-height:1.12}
+.tsub{color:var(--ink-soft);font-size:15px;margin-top:8px;margin-bottom:24px;max-width:50ch}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:24px;box-shadow:var(--shadow);margin-bottom:18px}
+
+textarea,input[type=text]{width:100%;border:1px solid var(--line);background:var(--paper);border-radius:16px;
+  padding:16px 18px;font-family:var(--sans);font-size:16px;color:var(--ink);resize:vertical;transition:.2s;line-height:1.6}
+textarea:focus,input:focus{outline:none;border-color:var(--clay);box-shadow:0 0 0 4px rgba(205,130,101,.13);background:#fff}
+textarea::placeholder,input::placeholder{color:var(--ink-faint)}
+.field-label{font-size:13.5px;font-weight:600;color:var(--ink-soft);margin-bottom:9px;display:block}
+
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:none;cursor:pointer;
+  font-family:var(--sans);font-weight:700;font-size:15px;padding:14px 24px;border-radius:30px;transition:.25s cubic-bezier(.2,.8,.2,1)}
+.btn-primary{background:linear-gradient(135deg,var(--clay),var(--clay-deep));color:#fff;box-shadow:0 12px 26px -12px rgba(185,107,77,.8)}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 16px 30px -12px rgba(185,107,77,.85)}
+.btn-ghost{background:var(--paper);color:var(--ink-soft);border:1px solid var(--line)}
+.btn-ghost:hover{background:var(--paper-2);color:var(--ink)}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+
+/* ---------- brain dump ---------- */
+.dump-input{display:flex;gap:10px;margin-bottom:8px}
+.dump-input input{flex:1}
+.hint{font-size:12.5px;color:var(--ink-faint);margin:4px 2px 16px}
+.thoughts{display:flex;flex-direction:column;gap:10px}
+.thought{display:flex;align-items:center;gap:12px;background:var(--paper);border:1px solid var(--line);
+  border-radius:15px;padding:13px 14px;animation:rise .35s both}
+.thought .txt{flex:1;font-size:15px}
+.thought .tags{display:flex;gap:6px;flex-shrink:0}
+.tg{width:34px;height:34px;border-radius:11px;border:1px solid var(--line);background:#fff;cursor:pointer;
+  font-size:16px;display:grid;place-items:center;transition:.2s;line-height:1}
+.tg:hover{transform:scale(1.12)}
+.tg.do:hover{background:var(--sage-soft)} .tg.decide:hover{background:var(--gold-soft)}
+.tg.let:hover{background:var(--lav-soft)} .tg.feel:hover{background:#f6cdd6}
+.empty{text-align:center;color:var(--ink-faint);padding:24px 10px;font-size:14.5px}
+.empty .e{font-size:34px;display:block;margin-bottom:8px;opacity:.8}
+
+/* sorted buckets */
+.buckets{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:4px}
+.bucket{border-radius:var(--r-sm);padding:16px;min-height:90px;border:1px solid var(--line)}
+.bucket h5{font-size:13px;font-weight:700;margin-bottom:10px;display:flex;align-items:center;gap:7px}
+.bucket.do{background:linear-gradient(160deg,#fff,var(--sage-soft) 230%)}
+.bucket.decide{background:linear-gradient(160deg,#fff,var(--gold-soft) 230%)}
+.bucket.let{background:linear-gradient(160deg,#fff,var(--lav-soft) 230%)}
+.bucket.feel{background:linear-gradient(160deg,#fff,#f6cdd6 250%)}
+.bucket li{list-style:none;font-size:14px;padding:7px 0;border-top:1px dashed var(--line);color:var(--ink)}
+.bucket li:first-of-type{border-top:none}
+.bucket .none{font-size:13px;color:var(--ink-faint)}
+
+/* ---------- breathing orb ---------- */
+.breath-wrap{text-align:center;padding:18px 0 6px}
+.orb{width:170px;height:170px;border-radius:50%;margin:6px auto 20px;position:relative;
+  background:radial-gradient(circle at 38% 32%,#fff,var(--clay-soft) 60%,var(--clay) 110%);
+  box-shadow:0 0 60px -10px rgba(205,130,101,.55);animation:breathe 11s ease-in-out infinite}
+.orb::after{content:"";position:absolute;inset:-22px;border-radius:50%;border:1px solid var(--clay-soft);
+  animation:breathe 11s ease-in-out infinite;opacity:.5}
+@keyframes breathe{0%,100%{transform:scale(.78)}40%{transform:scale(1.12)}55%{transform:scale(1.12)}}
+.breath-cue{font-family:var(--serif);font-size:24px;color:var(--clay-deep);font-style:italic;min-height:30px}
+
+/* step flow */
+.step{display:none}.step.active{display:block;animation:rise .45s both}
+.dots{display:flex;gap:7px;justify-content:center;margin:22px 0 6px}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--line);transition:.3s}
+.dot.on{background:var(--clay);transform:scale(1.3)}
+
+/* feelings */
+.feel-grid{display:flex;flex-wrap:wrap;gap:9px;margin-bottom:6px}
+.chip{border:1px solid var(--line);background:var(--paper);border-radius:30px;padding:10px 16px;font-size:14px;
+  font-weight:600;cursor:pointer;transition:.22s;color:var(--ink-soft)}
+.chip:hover{transform:translateY(-2px);border-color:var(--clay-soft)}
+.chip.sel{background:linear-gradient(135deg,var(--clay-soft),var(--gold-soft));border-color:var(--clay);color:var(--ink)}
+
+/* win jar */
+.jar-wrap{display:flex;gap:22px;align-items:center;flex-wrap:wrap}
+.jar{width:130px;height:160px;flex-shrink:0;position:relative}
+.wins-list{flex:1;min-width:200px;display:flex;flex-direction:column;gap:8px;max-height:230px;overflow:auto}
+.win-item{background:var(--paper);border:1px solid var(--line);border-radius:13px;padding:11px 14px;font-size:14px;
+  display:flex;gap:9px;align-items:center;animation:rise .4s both}
+.win-item .s{color:var(--gold)}
+
+/* toast / celebrate */
+.toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%) translateY(120px);
+  background:var(--ink);color:var(--paper);padding:14px 22px;border-radius:30px;font-weight:600;font-size:14.5px;
+  box-shadow:var(--shadow);z-index:200;transition:.45s cubic-bezier(.2,.8,.2,1);display:flex;gap:9px;align-items:center}
+.toast.show{transform:translateX(-50%) translateY(0)}
+
+.confetti{position:fixed;inset:0;pointer-events:none;z-index:150;overflow:hidden}
+.cf{position:absolute;width:10px;height:14px;border-radius:2px;animation:fall linear forwards}
+@keyframes fall{to{transform:translateY(110vh) rotate(720deg);opacity:0}}
+
+/* bottom nav */
+.nav{position:fixed;left:0;right:0;bottom:0;background:rgba(255,253,249,.85);backdrop-filter:blur(14px);
+  border-top:1px solid var(--line);display:flex;justify-content:space-around;padding:10px 8px calc(10px + env(safe-area-inset-bottom));z-index:100}
+.nav .app{padding:0}
+.nav-inner{max-width:720px;margin:0 auto;width:100%;display:flex;justify-content:space-around}
+.nav button{background:none;border:none;cursor:pointer;color:var(--ink-faint);font-family:var(--sans);
+  font-size:10.5px;font-weight:700;display:flex;flex-direction:column;align-items:center;gap:3px;transition:.2s;padding:4px 10px}
+.nav button .ni{font-size:21px}
+.nav button.on,.nav button:hover{color:var(--clay-deep)}
+
+.soft-note{font-size:13px;color:var(--ink-faint);text-align:center;margin-top:18px;font-style:italic}
+/* ---------- freestyle diary ---------- */
+.t-journal .ic{background:linear-gradient(150deg,var(--sage-soft),var(--gold-soft))}
+.t-journal{background:linear-gradient(135deg,#fff 0%,var(--sage-soft) 150%)}
+.t-hist .ic{background:linear-gradient(150deg,var(--lav-soft),var(--sage-soft))}
+.diary-date{font-family:var(--serif);font-size:18px;color:var(--clay-deep);font-style:italic;margin-bottom:14px}
+.diary-wrap{position:relative}
+.diary-margin{position:absolute;left:42px;top:6px;bottom:6px;width:1.5px;background:var(--clay-soft);pointer-events:none;border-radius:2px}
+.diary{width:100%;border:1px solid var(--line);border-radius:var(--r);background-color:var(--card);
+  background-image:repeating-linear-gradient(transparent,transparent 33px,#F0E4D3 33px,#F0E4D3 34px);
+  background-attachment:local;padding:8px 22px 22px 58px;min-height:360px;font-size:17px;line-height:34px;
+  font-family:var(--sans);color:var(--ink);resize:vertical;transition:.2s}
+.diary:focus{outline:none;border-color:var(--clay);box-shadow:0 0 0 4px rgba(205,130,101,.13)}
+.diary::placeholder{color:var(--ink-faint)}
+
+/* ---------- history entries ---------- */
+.entry{background:var(--card);border:1px solid var(--line);border-radius:var(--r-sm);padding:15px 18px;
+  margin-bottom:12px;box-shadow:var(--shadow-sm);animation:rise .4s both}
+.entry .meta{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.entry .date{font-size:12px;font-weight:700;color:var(--clay-deep);letter-spacing:.02em}
+.entry .del{background:none;border:none;color:var(--ink-faint);cursor:pointer;font-size:14px;padding:3px 7px;border-radius:9px;transition:.2s}
+.entry .del:hover{color:var(--clay-deep);background:var(--paper-2)}
+.entry .body{font-size:14.5px;color:var(--ink);white-space:pre-wrap;line-height:1.6}
+.hist-search{display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap}
+.hist-search input{flex:1;min-width:180px;padding:12px 16px;font-size:15px}
+.hist-count{font-size:12px;color:var(--ink-faint);font-weight:600;white-space:nowrap}
+.hist-filters{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:16px}
+.hist-filters .chip{padding:7px 13px;font-size:12.5px}
+.hist-month{font-family:var(--serif);font-size:14px;font-weight:600;color:var(--clay-deep);
+  margin:20px 4px 11px;letter-spacing:.01em}
+.hist-month:first-child{margin-top:2px}
+mark{background:var(--gold-soft);color:inherit;border-radius:3px;padding:0 2px}
+
+/* ---------- patterns ---------- */
+.patterns{background:linear-gradient(155deg,#fff,var(--sage-soft) 280%);border:1px solid var(--line);
+  border-radius:var(--r);padding:22px;box-shadow:var(--shadow);margin-bottom:24px}
+.patterns h3{font-family:var(--serif);font-size:20px;font-weight:600;margin-bottom:4px}
+.patterns .lead{font-size:13.5px;color:var(--ink-soft);margin-bottom:16px}
+.pat-stats{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:8px}
+.stat{flex:1;min-width:86px;background:var(--paper);border:1px solid var(--line);border-radius:15px;padding:13px 8px;text-align:center}
+.stat b{display:block;font-family:var(--serif);font-size:27px;color:var(--clay-deep);font-weight:600;line-height:1}
+.stat span{font-size:11px;color:var(--ink-soft);font-weight:600;display:block;margin-top:5px}
+.pat-row{display:flex;gap:12px;align-items:flex-start;padding:12px 0;border-top:1px dashed var(--line);font-size:14.5px;line-height:1.5}
+.pat-row .pi{font-size:19px;flex-shrink:0;line-height:1.5}
+.pat-note{font-size:12px;color:var(--ink-faint);font-style:italic;margin-top:14px;text-align:center;line-height:1.5}
+
+/* ---------- data export/import ---------- */
+.data-card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:20px;box-shadow:var(--shadow-sm)}
+.data-btns{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+
+/* ---------- footer ---------- */
+.site-footer{text-align:center;margin-top:46px;padding-top:24px;border-top:1px solid var(--line);color:var(--ink-faint);font-size:12.5px;line-height:1.6}
+.site-footer b{font-family:var(--serif);color:var(--clay-deep);font-weight:600;font-style:italic;font-size:14px}
+.site-footer .links{margin-top:7px;font-size:11px;max-width:42ch;margin-left:auto;margin-right:auto}
+
+/* ---------- flippable journal book ---------- */
+.journal-book{position:relative;perspective:2400px;margin-bottom:16px}
+.book-spine{position:absolute;left:-3px;top:10px;bottom:10px;width:12px;border-radius:7px 3px 3px 7px;
+  background:linear-gradient(90deg,var(--clay-deep),var(--clay));box-shadow:var(--shadow-sm);z-index:0}
+.journal-page{position:relative;z-index:1;transform-origin:left center;
+  transition:transform .34s cubic-bezier(.4,.1,.5,1);background:var(--card);
+  border:1px solid var(--line);border-radius:5px 16px 16px 5px;margin-left:6px;
+  padding:22px 22px 20px;min-height:392px;
+  box-shadow:1.5px 1.5px 0 #f1e6d6, 4px 3px 0 #ece0cf, 7px 5px 0 #e7dbc8, var(--shadow)}
+.journal-page.turning{transform:rotateY(-86deg)}
+.page-curl{position:absolute;right:0;bottom:0;width:0;height:0;
+  border-style:solid;border-width:0 0 30px 30px;border-color:transparent transparent var(--paper-2) transparent;
+  border-bottom-right-radius:16px;opacity:.7;pointer-events:none}
+.page-curl::after{content:"";position:absolute;right:-30px;bottom:0;width:30px;height:30px;
+  background:linear-gradient(135deg,transparent 50%,rgba(94,68,46,.12));border-bottom-right-radius:16px}
+.read-body{min-height:300px;white-space:pre-wrap;cursor:default;overflow:auto}
+.del-page{background:none;border:1px solid var(--line);color:var(--ink-faint);cursor:pointer;
+  font-size:12.5px;font-weight:600;padding:8px 14px;border-radius:30px;transition:.2s}
+.del-page:hover{color:var(--clay-deep);border-color:var(--clay-soft);background:var(--paper-2)}
+.book-nav{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:8px}
+.turn{background:var(--card);border:1px solid var(--line);border-radius:30px;padding:11px 18px;
+  font-family:var(--sans);font-weight:700;font-size:14px;color:var(--ink-soft);cursor:pointer;
+  box-shadow:var(--shadow-sm);transition:.22s cubic-bezier(.2,.8,.2,1)}
+.turn:hover:not(:disabled){color:var(--clay-deep);transform:translateY(-2px)}
+.turn:disabled{opacity:.4;cursor:default;box-shadow:none}
+.book-counter{font-size:12.5px;font-weight:600;color:var(--ink-soft);text-align:center;flex:1}
+
+/* ---------- data-safety banner ---------- */
+.banner{display:flex;align-items:center;gap:12px;border-radius:var(--r-sm);padding:13px 14px;margin-bottom:22px;
+  animation:rise .5s both;border:1px solid var(--gold)}
+.banner.warn{background:linear-gradient(135deg,#FBE7D6,#F6D9B8);border-color:var(--clay)}
+.banner.nudge{background:linear-gradient(135deg,#fff,var(--sage-soft) 260%);border-color:var(--sage)}
+.banner .b-ic{font-size:20px;flex-shrink:0}
+.banner .b-text{flex:1;font-size:13px;line-height:1.45;color:var(--ink)}
+.banner .b-text b{color:var(--clay-deep)}
+.banner .b-act{flex-shrink:0;background:var(--clay-deep);color:#fff;border:none;border-radius:30px;
+  padding:9px 15px;font-family:var(--sans);font-weight:700;font-size:13px;cursor:pointer;transition:.2s}
+.banner .b-act:hover{transform:translateY(-1px)}
+.banner .b-x{flex-shrink:0;background:none;border:none;color:var(--ink-faint);font-size:15px;cursor:pointer;
+  padding:4px 6px;border-radius:8px;transition:.2s}
+.banner .b-x:hover{color:var(--ink)}
+@media(max-width:480px){.banner{flex-wrap:wrap}.banner .b-text{flex-basis:100%;order:3}}
+
+/* ---------- onboarding cards ---------- */
+.onb{position:fixed;inset:0;z-index:500;display:none;align-items:center;justify-content:center;padding:20px;
+  background:rgba(59,52,45,.5);backdrop-filter:blur(7px);animation:fade .3s both}
+.onb.show{display:flex}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+.onb-card{background:var(--card);border:1px solid var(--line);border-radius:30px;max-width:430px;width:100%;
+  padding:38px 30px 26px;box-shadow:0 34px 80px -22px rgba(94,68,46,.62);text-align:center;position:relative;
+  animation:rise .45s cubic-bezier(.2,.8,.2,1) both}
+.onb-skip{position:absolute;top:16px;right:18px;background:none;border:none;color:var(--ink-faint);
+  font-size:13px;font-weight:600;cursor:pointer;transition:.2s}
+.onb-skip:hover{color:var(--ink-soft)}
+.onb-step{display:none}
+.onb-step.active{display:block;animation:rise .42s both}
+.onb-ic{font-size:48px;margin-bottom:14px;display:block;line-height:1}
+.onb-card h3{font-family:var(--serif);font-size:25px;font-weight:600;letter-spacing:-.01em;margin-bottom:11px}
+.onb-card .lead{font-size:15px;color:var(--ink-soft);line-height:1.6;max-width:34ch;margin:0 auto}
+.onb-feats{text-align:left;margin:4px auto 0;max-width:32ch;display:flex;flex-direction:column;gap:14px}
+.onb-feat{display:flex;gap:13px;align-items:flex-start;font-size:14.5px;color:var(--ink);line-height:1.46}
+.onb-feat .fi{font-size:23px;flex-shrink:0;line-height:1.2}
+.onb-feat b{color:var(--clay-deep)}
+.onb-dots{display:flex;gap:7px;justify-content:center;margin:24px 0 18px}
+.onb-dots .d{width:8px;height:8px;border-radius:50%;background:var(--line);transition:.3s cubic-bezier(.2,.8,.2,1)}
+.onb-dots .d.on{background:var(--clay);width:24px;border-radius:5px}
+.onb-nav{display:flex;gap:10px;justify-content:center}
+.ob-link{background:none;border:none;color:var(--clay-deep);font-family:var(--sans);font-weight:700;
+  font-size:12px;cursor:pointer;text-decoration:underline;text-underline-offset:2px;padding:2px}
+.ob-link:hover{opacity:.75}
+
+@media(max-width:480px){.tools{grid-template-columns:1fr}.moods{gap:6px}.m{padding:10px 3px}.m .e{font-size:21px}}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- TOP BAR -->
+  <div class="topbar">
+    <div class="brand" onclick="go('home')">
+      <div class="mark"><span></span></div>
+      <div><b>Quiet</b><small>reset · dump · breathe</small></div>
+    </div>
+    <div class="shown">🌱 shown up <b id="shownCount">7</b>×</div>
+  </div>
+
+  <!-- DATA-SAFETY BANNER (incognito warning + gentle backup nudge) -->
+  <div class="banner" id="dataBanner" style="display:none">
+    <span class="b-ic" id="bannerIcon">🔒</span>
+    <div class="b-text" id="bannerText"></div>
+    <button class="b-act" id="bannerAct" onclick="exportData()">Export now</button>
+    <button class="b-x" onclick="dismissBanner()" aria-label="Dismiss">✕</button>
+  </div>
+
+  <!-- ============ HOME ============ -->
+  <section id="home" class="screen active">
+    <div class="hero stagger">
+      <h1 class="hello" id="greeting">Hey. <em>You made it here.</em></h1>
+      <p class="sub">No pressure, no streaks to break. Pick whatever your brain needs right now — or just empty it out below.</p>
+    </div>
+
+    <div class="mood stagger">
+      <h3>How heavy does today feel?</h3>
+      <div class="moods" id="moods">
+        <div class="m" data-k="light"><span class="e">🌤️</span>Light</div>
+        <div class="m" data-k="okay"><span class="e">🙂</span>Okay</div>
+        <div class="m" data-k="full"><span class="e">😵‍💫</span>Full</div>
+        <div class="m" data-k="heavy"><span class="e">🌧️</span>Heavy</div>
+        <div class="m" data-k="numb"><span class="e">🫥</span>Numb</div>
+      </div>
+      <div class="mood-reply" id="moodReply"></div>
+    </div>
+
+    <div class="sec-label stagger">Start here · your daily anchors</div>
+    <p class="group-note stagger">The bigger cards are the everyday ones — a good place to begin. Use them as often or as little as you like.</p>
+    <div class="tools stagger">
+      <div class="tool big t-dump" onclick="go('dump')">
+        <div class="ic">🧠</div>
+        <h4>Quick Dump</h4>
+        <p>Got racing thoughts? Empty them out fast — one line each — then sort into Do / Decide / Let go / Just feelings in two taps.</p>
+        <span class="go">Empty my head →</span>
+      </div>
+      <div class="tool big t-journal" onclick="go('journal')">
+        <div class="ic">✍️</div>
+        <h4>Free Journal</h4>
+        <p>For when you want to write properly. A calm, blank diary page — no prompts, no rules. Every entry is saved to your History.</p>
+        <span class="go">Open my journal →</span>
+      </div>
+      <div class="tool big t-night" onclick="go('night')">
+        <div class="ic">🌙</div>
+        <h4>Gentle Reset</h4>
+        <p>Close the day softly — three small prompts, zero rating, no guilt about what didn't get done.</p>
+        <span class="go">Wind down →</span>
+      </div>
+    </div>
+
+    <div class="sec-label stagger" style="margin-top:26px">When you need a hand</div>
+    <p class="group-note stagger">Smaller tools for a specific moment — reach for them when something's up.</p>
+    <div class="tools stagger">
+      <div class="tool t-spiral" onclick="go('spiral')">
+        <div class="ic">🌀</div>
+        <h4>Calm a Spiral</h4>
+        <p>Flooded by too much, or stuck on one looping thought? Breathe, then gently wind it down to one small step.</p>
+        <span class="go">Slow the spin →</span>
+      </div>
+      <div class="tool t-heart" onclick="go('feel')">
+        <div class="ic">💗</div>
+        <h4>Name the Feeling</h4>
+        <p>Find the real word for it. Naming it makes it smaller.</p>
+        <span class="go">Name it →</span>
+      </div>
+      <div class="tool t-win" onclick="go('win')">
+        <div class="ic">✨</div>
+        <h4>Win Jar</h4>
+        <p>Catch the tiny wins your brain keeps deleting. Watch the jar fill.</p>
+        <span class="go">Add a win →</span>
+      </div>
+      <div class="tool t-hist" onclick="go('history')">
+        <div class="ic">📖</div>
+        <h4>History &amp; Patterns</h4>
+        <p>Revisit past entries and see a gentle, no-pressure summary of how you've been.</p>
+        <span class="go">Look back →</span>
+      </div>
+    </div>
+    <p class="soft-note">Whatever you write stays on this device. This is your space.</p>
+  </section>
+
+  <!-- ============ BRAIN DUMP ============ -->
+  <section id="dump" class="screen">
+    <button class="back" onclick="go('home')">← Home</button>
+    <h2 class="th">Quick Dump</h2>
+    <p class="tsub">Don't think, just empty. One thought per line — hit enter and it's out of your head and onto the page.</p>
+
+    <div class="panel">
+      <div class="dump-input">
+        <input type="text" id="dumpField" placeholder="What's rattling around in there?" autocomplete="off">
+        <button class="btn btn-primary" onclick="addThought()">Add</button>
+      </div>
+      <p class="hint">Tip: dump first, sort later. The 4 little buttons appear next to each thought.</p>
+      <div class="thoughts" id="thoughts">
+        <div class="empty" id="dumpEmpty"><span class="e">🪶</span>Nothing here yet — and that's allowed. Start with the loudest thought.</div>
+      </div>
+      <div class="row" id="dumpFreshRow" style="display:none;justify-content:flex-end;margin-top:14px">
+        <button class="del-page" onclick="clearDump()">🧹 Start fresh</button>
+      </div>
+    </div>
+
+    <div class="panel" id="sortPanel" style="display:none">
+      <span class="field-label">What you've sorted so far</span>
+      <div class="buckets">
+        <div class="bucket do"><h5>✅ Do</h5><ul id="b-do"><li class="none">—</li></ul></div>
+        <div class="bucket decide"><h5>🤔 Decide</h5><ul id="b-decide"><li class="none">—</li></ul></div>
+        <div class="bucket let"><h5>🍃 Let go</h5><ul id="b-let"><li class="none">—</li></ul></div>
+        <div class="bucket feel"><h5>💗 Just feelings</h5><ul id="b-feel"><li class="none">—</li></ul></div>
+      </div>
+      <p class="hint" style="margin-top:14px">See? It was never one big scary blob. It was a handful of small things.</p>
+    </div>
+  </section>
+
+  <!-- ============ CALM A SPIRAL ============ -->
+  <section id="spiral" class="screen">
+    <button class="back" onclick="go('home')">← Home</button>
+    <h2 class="th">Calm a Spiral</h2>
+    <p class="tsub">Whether it's everything-at-once or one thought on repeat — we'll slow the spin and wind it down to something small.</p>
+
+    <div class="panel">
+      <!-- step 1: breathe -->
+      <div class="step active" id="s1">
+        <div class="breath-wrap">
+          <div class="orb"></div>
+          <div class="breath-cue" id="breathCue">Breathe in…</div>
+        </div>
+        <p class="hint" style="text-align:center">Follow the circle for a few slow rounds. No rush — the spiral can wait for you.</p>
+        <div class="row" style="justify-content:center;margin-top:18px">
+          <button class="btn btn-primary" onclick="spiralStep(2)">I've slowed down a little →</button>
+        </div>
+      </div>
+      <!-- step 2: name it -->
+      <div class="step" id="s2">
+        <label class="field-label">What's spiraling right now? A pile of too-much, or one thought on a loop — just get it out, messy is fine.</label>
+        <textarea id="sp_what" rows="3" placeholder="Write it as it actually sounds in your head…"></textarea>
+        <div class="row" style="margin-top:16px"><button class="btn btn-primary" onclick="spiralStep(3)">Next →</button></div>
+      </div>
+      <!-- step 3: fact or fear -->
+      <div class="step" id="s3">
+        <label class="field-label">Is this mostly something <em>happening now</em>, or a <em>what-if</em> about later? (Both are valid — naming it shrinks it.)</label>
+        <div class="feel-grid">
+          <div class="chip" onclick="pickSpiral(this,'Happening now')">Happening now</div>
+          <div class="chip" onclick="pickSpiral(this,'A what-if about later')">A what-if</div>
+          <div class="chip" onclick="pickSpiral(this,'A bit of both')">A bit of both</div>
+        </div>
+        <p class="hint" id="sp_reflect" style="margin-top:12px"></p>
+        <div class="row" style="margin-top:10px"><button class="btn btn-primary" onclick="spiralStep(4)">Next →</button></div>
+      </div>
+      <!-- step 4: one small move -->
+      <div class="step" id="s4">
+        <label class="field-label">Most of it can wait. What's the <em>one</em> small thing — 2 minutes or less — that would ease this even slightly? (What would you tell a friend to do first?)</label>
+        <input type="text" id="sp_step" placeholder="One tiny next move. Sending a text counts.">
+        <div class="row" style="margin-top:16px"><button class="btn btn-primary" onclick="spiralStep(5)">See it laid out →</button></div>
+      </div>
+      <!-- step 5: settled -->
+      <div class="step" id="s5">
+        <div style="text-align:center;padding:4px 0 2px"><div style="font-size:44px">🌅</div>
+          <h3 style="font-family:var(--serif);font-size:23px;font-weight:600;margin:4px 0 16px">The spin is slowing. Here it is, outside your head:</h3></div>
+        <div class="bucket let" style="text-align:left;background:var(--paper-2)">
+          <p style="font-size:13px;color:var(--ink-soft)">What was spiraling</p><p id="rsp_what" style="margin-bottom:12px"></p>
+          <p style="font-size:13px;color:var(--ink-soft)">It's…</p><p id="rsp_type" style="margin-bottom:12px"></p>
+          <p style="font-size:13px;color:var(--ink-soft)">My one small step</p><p id="rsp_step" style="color:var(--clay-deep);font-weight:600"></p>
+        </div>
+        <p class="soft-note">Saved to your <b style="color:var(--clay-deep)">History</b>. You don't have to solve all of it — just that one step, and then we'll see.</p>
+        <div class="row" style="justify-content:center;margin-top:12px">
+          <button class="btn btn-ghost" onclick="resetSpiral()">Go again</button>
+          <button class="btn btn-primary" onclick="go('home')">Back home</button>
+        </div>
+      </div>
+      <div class="dots" id="spiralDots"><span class="dot on"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>
+    </div>
+  </section>
+
+  <!-- ============ NAME THE FEELING ============ -->
+  <section id="feel" class="screen">
+    <button class="back" onclick="go('home')">← Home</button>
+    <h2 class="th">Name the Feeling</h2>
+    <p class="tsub">"Bad" is too big to hold. Let's find the smaller, truer word — that alone takes the edge off.</p>
+    <div class="panel">
+      <span class="field-label">Start broad — what's the family of this feeling?</span>
+      <div class="feel-grid" id="feelCore"></div>
+      <div id="feelNuanceWrap" style="display:none;margin-top:18px">
+        <span class="field-label">Warmer… which one fits best?</span>
+        <div class="feel-grid" id="feelNuance"></div>
+      </div>
+      <div id="feelBody" style="display:none;margin-top:18px">
+        <label class="field-label">Where do you notice it in your body? (no wrong answer)</label>
+        <input type="text" id="feelWhere" placeholder="Tight chest, buzzing hands, heavy shoulders…">
+        <label class="field-label" style="margin-top:16px">If this feeling could ask for one thing, what would it be?</label>
+        <input type="text" id="feelNeeds" placeholder="Rest, reassurance, to be heard, a break, water…">
+        <div class="row" style="margin-top:18px"><button class="btn btn-primary" onclick="feelDone()">Hold it gently →</button></div>
+      </div>
+      <div id="feelResult" style="display:none">
+        <div style="text-align:center;padding:6px 0"><div style="font-size:42px">🫶</div></div>
+        <p style="text-align:center;font-family:var(--serif);font-size:20px;line-height:1.4" id="feelSentence"></p>
+        <p class="soft-note">Feelings aren't facts or instructions — they're messengers. You heard this one. That's enough.<br>Saved to your <b style="color:var(--clay-deep)">History</b>, so you can look back later.</p>
+        <div class="row" style="justify-content:center;margin-top:12px">
+          <button class="btn btn-ghost" onclick="resetFeel()">Another feeling</button>
+          <button class="btn btn-primary" onclick="go('home')">Back home</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ WIN JAR ============ -->
+  <section id="win" class="screen">
+    <button class="back" onclick="go('home')">← Home</button>
+    <h2 class="th">Win Jar</h2>
+    <p class="tsub">ADHD brains forget the wins and replay the misses. So we collect proof. Every tiny one counts — showered, replied, drank water, all of it.</p>
+    <div class="panel">
+      <div class="dump-input">
+        <input type="text" id="winField" placeholder="One thing you did — however small…" autocomplete="off">
+        <button class="btn btn-primary" onclick="addWin()">Drop in</button>
+      </div>
+      <div class="jar-wrap" style="margin-top:18px">
+        <svg class="jar" viewBox="0 0 130 160" id="jarSvg">
+          <defs>
+            <linearGradient id="fillGrad" x1="0" y1="1" x2="0" y2="0">
+              <stop offset="0" stop-color="#E3B071"/><stop offset="1" stop-color="#F2D9AE"/>
+            </linearGradient>
+            <clipPath id="jarClip"><path d="M30 38 h70 v98 a14 14 0 0 1 -14 14 h-42 a14 14 0 0 1 -14 -14 z"/></clipPath>
+          </defs>
+          <rect x="44" y="20" width="42" height="16" rx="5" fill="#EBDFCF"/>
+          <rect id="jarFill" x="30" y="150" width="70" height="0" fill="url(#fillGrad)" clip-path="url(#jarClip)" style="transition:all .7s cubic-bezier(.2,.8,.2,1)"/>
+          <g id="jarStars" clip-path="url(#jarClip)"></g>
+          <path d="M30 38 h70 v98 a14 14 0 0 1 -14 14 h-42 a14 14 0 0 1 -14 -14 z" fill="none" stroke="#CD8265" stroke-width="2.5"/>
+          <path d="M30 38 h70" stroke="#CD8265" stroke-width="2.5"/>
+        </svg>
+        <div class="wins-list" id="winsList">
+          <div class="empty"><span class="e">🫙</span>Empty for now. The first one is the hardest to notice — drop it in.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ GENTLE RESET (NIGHT) ============ -->
+  <section id="night" class="screen">
+    <button class="back" onclick="go('home')">← Home</button>
+    <h2 class="th">Gentle Reset</h2>
+    <p class="tsub">No scoring the day. No list of failures. Three soft questions, then you're allowed to put it down.</p>
+    <div class="panel">
+      <label class="field-label">🌼 One thing that was okay today — even a 1% thing.</label>
+      <textarea id="n_ok" rows="2" placeholder="The coffee was good. I answered one email. I'm still here."></textarea>
+      <label class="field-label" style="margin-top:18px">🍃 One thing I'm setting down for the night (not my job to solve at 11pm).</label>
+      <textarea id="n_letgo" rows="2" placeholder="Whatever your brain wants to chew on in bed — leave it here instead."></textarea>
+      <label class="field-label" style="margin-top:18px">🌱 Tomorrow's <em>one</em> gentle thing (optional, and tiny).</label>
+      <input type="text" id="n_tom" placeholder="Just one small intention — or leave it blank.">
+      <div class="row" style="margin-top:20px"><button class="btn btn-primary" onclick="nightDone()">Close the day →</button></div>
+    </div>
+    <div class="panel" id="nightResult" style="display:none;text-align:center">
+      <div style="font-size:44px">🌙</div>
+      <h3 style="font-family:var(--serif);font-size:23px;font-weight:600;margin:6px 0">The day is closed.</h3>
+      <p class="sub" style="margin:0 auto 4px">You did enough. You <em>are</em> enough, and the unfinished things will keep till morning. Rest now.</p>
+      <div class="row" style="justify-content:center;margin-top:18px"><button class="btn btn-primary" onclick="go('home')">Goodnight</button></div>
+    </div>
+  </section>
+
+  <!-- ============ FREESTYLE JOURNAL ============ -->
+  <section id="journal" class="screen">
+    <button class="back" onclick="go('home')">← Home</button>
+    <h2 class="th">Free Journal</h2>
+    <p class="tsub">No prompts, no rules, no right way to do this. Today's page is ready below — and you can flip back through everything you've written, like a real journal.</p>
+
+    <div class="book-nav">
+      <button class="turn" id="btnOlder" onclick="turnPage(1)">↜ Older</button>
+      <span class="book-counter" id="bookCounter">Today · 1 / 1</span>
+      <button class="turn" id="btnNewer" onclick="turnPage(-1)">Newer ↝</button>
+    </div>
+
+    <div class="journal-book">
+      <div class="book-spine"></div>
+      <div class="journal-page" id="journalPage">
+        <!-- WRITE PAGE (today) -->
+        <div id="writePage">
+          <div class="diary-date" id="diaryDate">Today</div>
+          <div class="diary-wrap">
+            <div class="diary-margin"></div>
+            <textarea class="diary" id="diaryText" placeholder="Dear diary… or just start mid-thought. Nobody reads this but you."></textarea>
+          </div>
+          <div class="row" style="justify-content:space-between;margin-top:16px;align-items:center">
+            <span class="hint" id="diaryCount" style="margin:0">0 words</span>
+            <button class="btn btn-primary" onclick="saveJournal()">Save to my journal</button>
+          </div>
+        </div>
+        <!-- READ PAGE (past entries) -->
+        <div id="readPage" style="display:none">
+          <div class="diary-date" id="readDate"></div>
+          <div class="diary-wrap">
+            <div class="diary-margin"></div>
+            <div class="diary read-body" id="readBody"></div>
+            <textarea class="diary" id="readEdit" style="display:none"></textarea>
+          </div>
+          <div class="row" id="readViewBtns" style="justify-content:flex-end;margin-top:14px;gap:8px">
+            <button class="del-page" onclick="startEditEntry()">✏️ Edit</button>
+            <button class="del-page" id="readDelete">🗑 Delete this page</button>
+          </div>
+          <div class="row" id="readEditBtns" style="display:none;justify-content:flex-end;margin-top:14px;gap:8px">
+            <button class="del-page" onclick="cancelEditEntry()">Cancel</button>
+            <button class="btn btn-primary" style="padding:10px 18px;font-size:14px" onclick="saveEditEntry()">Save changes</button>
+          </div>
+        </div>
+        <div class="page-curl"></div>
+      </div>
+    </div>
+    <p class="soft-note">Every saved page also lives in <b style="color:var(--clay-deep)">History</b> — and remember to <b style="color:var(--clay-deep)">export a backup</b> now and then.</p>
+  </section>
+
+  <!-- ============ HISTORY + PATTERNS + DATA ============ -->
+  <section id="history" class="screen">
+    <button class="back" onclick="go('home')">← Home</button>
+    <h2 class="th">History</h2>
+    <p class="tsub">Everything you've written, kept in one quiet place. A gentle mirror — never a report card.</p>
+
+    <div class="patterns" id="patterns"></div>
+
+    <div class="sec-label" style="margin:4px 4px 12px">Past entries</div>
+    <div class="hist-search">
+      <input type="text" id="histSearch" placeholder="🔍 Search your entries…" oninput="renderHistory()" autocomplete="off">
+      <span class="hist-count" id="histCount"></span>
+    </div>
+    <div class="hist-filters" id="histFilters">
+      <div class="chip sel" onclick="setHistFilter('all',this)">All</div>
+      <div class="chip" onclick="setHistFilter('journal',this)">📖 Journal</div>
+      <div class="chip" onclick="setHistFilter('feeling',this)">💗 Feelings</div>
+      <div class="chip" onclick="setHistFilter('spiral',this)">🌀 Spirals</div>
+      <div class="chip" onclick="setHistFilter('night',this)">🌙 Resets</div>
+    </div>
+    <div id="historyList"></div>
+
+    <div class="sec-label" style="margin:26px 4px 14px">Your data</div>
+    <div class="data-card">
+      <p style="font-size:14px;color:var(--ink-soft);line-height:1.55">Switching phone or browser? Download a backup file, then import it on your new device. Your words stay on your device and are never uploaded anywhere — exporting is the only way they leave.</p>
+      <div class="data-btns">
+        <button class="btn btn-primary" onclick="exportData()">💾 Export backup</button>
+        <label class="btn btn-ghost" style="cursor:pointer">📂 Import backup
+          <input type="file" accept="application/json,.json" onchange="importData(this)" style="display:none">
+        </label>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ FOOTER ============ -->
+  <footer class="site-footer">
+    <p>Made with care for busy brains.</p>
+    <p style="margin-top:5px">© <span id="yr"></span> <b>DreamsToDone</b> &nbsp;·&nbsp; <em>Quiet</em>™ — All rights reserved.</p>
+    <p class="links">A space for reflection and self-care. Not a substitute for professional mental-health support.</p>
+    <p style="margin-top:8px"><button class="ob-link" onclick="openOnboarding()">How it works</button></p>
+  </footer>
+
+</div>
+
+<!-- BOTTOM NAV -->
+<nav class="nav"><div class="nav-inner">
+  <button data-s="home" class="on" onclick="go('home')"><span class="ni">🏠</span>Home</button>
+  <button data-s="journal" onclick="go('journal')"><span class="ni">✍️</span>Free journal</button>
+  <button data-s="dump" onclick="go('dump')"><span class="ni">🧠</span>Quick dump</button>
+  <button data-s="win" onclick="go('win')"><span class="ni">✨</span>Wins</button>
+  <button data-s="history" onclick="go('history')"><span class="ni">📖</span>History</button>
+</div></nav>
+
+<!-- ONBOARDING -->
+<div class="onb" id="onboarding">
+  <div class="onb-card">
+    <button class="onb-skip" onclick="obFinish()">Skip</button>
+
+    <div class="onb-step active">
+      <span class="onb-ic">🌿</span>
+      <h3>Welcome to Quiet</h3>
+      <p class="lead">A calm place to get thoughts out of your head and gently reset. No streaks, no scores, no guilt — come as often or as little as you need. There's no wrong way to use this.</p>
+    </div>
+
+    <div class="onb-step">
+      <span class="onb-ic">🧠</span>
+      <h3>Two ways to write</h3>
+      <div class="onb-feats">
+        <div class="onb-feat"><span class="fi">🧠</span><div><b>Quick Dump</b> — racing thoughts out fast, one line each. Then sort them into Do / Decide / Let go / Just feelings with a tap.</div></div>
+        <div class="onb-feat"><span class="fi">✍️</span><div><b>Free Journal</b> — a real diary page for when you want to write properly. Flip back through past pages anytime, like a real book.</div></div>
+        <div class="onb-feat"><span class="fi">🌀</span><div>Flooded, or stuck on a looping thought? <b>Calm a Spiral</b> walks you down gently — breathe, then wind it down to one small step. It's saved to History too.</div></div>
+      </div>
+    </div>
+
+    <div class="onb-step">
+      <span class="onb-ic">✨</span>
+      <h3>Catch the good stuff</h3>
+      <div class="onb-feats">
+        <div class="onb-feat"><span class="fi">✨</span><div>Drop tiny wins in the <b>Win Jar</b> — showered, replied, drank water — and watch it fill up.</div></div>
+        <div class="onb-feat"><span class="fi">📖</span><div>Everything you write is saved to <b>History</b>, with a gentle look at how you've been. A kind mirror, never a report card.</div></div>
+      </div>
+    </div>
+
+    <div class="onb-step">
+      <span class="onb-ic">🔒</span>
+      <h3>Yours, and only yours</h3>
+      <p class="lead">Everything you write stays right here on your device — private, and never uploaded anywhere.</p>
+      <div class="onb-feats" style="margin-top:16px">
+        <div class="onb-feat"><span class="fi">💾</span><div>The one little habit that keeps it safe: tap <b>Export</b> in History now and then to save a backup file (pop it in your cloud drive).</div></div>
+        <div class="onb-feat"><span class="fi">📂</span><div>New phone or browser? Just <b>Import</b> that file and everything's back. We'll give you a gentle nudge when it's a good time to back up.</div></div>
+      </div>
+    </div>
+
+    <div class="onb-dots" id="obDots">
+      <span class="d on"></span><span class="d"></span><span class="d"></span><span class="d"></span>
+    </div>
+    <div class="onb-nav">
+      <button class="btn btn-ghost" id="obBack" onclick="obPrev()" style="visibility:hidden">← Back</button>
+      <button class="btn btn-primary" id="obNext" onclick="obNext()">Next →</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+<div class="confetti" id="confetti"></div>
+
+<script>
+/* ============================================================
+   STATE + STORAGE
+   Saves to this device via localStorage. On a normally hosted /
+   downloaded copy it persists across visits automatically. (Inside
+   this in-app preview the browser sandbox may block storage, so it
+   safely falls back to in-session memory — the Export/Import backup
+   in History is the guaranteed way to move data between devices.)
+   ============================================================ */
+const state = { mood:null, thoughts:[], sorted:{do:[],decide:[],let:[],feel:[]},
+                wins:[], journal:[], moodLog:[], shown:7, lastExportTs:null, lastExportCount:null, onboarded:false };
+const CAN_STORE=(()=>{try{const k='__quiet_test';localStorage.setItem(k,'1');localStorage.removeItem(k);return true;}catch(e){return false;}})();
+let saveWarned=false;
+function save(){ if(!CAN_STORE)return; try{localStorage.setItem('quiet_dreamstodone',JSON.stringify(state)); saveWarned=false; }catch(e){
+  if(!saveWarned){ saveWarned=true; try{toast('This browser\u2019s storage is full — please export a backup to keep your entries safe');}catch(_){}}
+} }
+function load(){ if(!CAN_STORE)return; try{const d=localStorage.getItem('quiet_dreamstodone'); if(d){const p=JSON.parse(d);Object.assign(state,p);
+  state.sorted=p.sorted||{do:[],decide:[],let:[],feel:[]}; state.journal=p.journal||[]; state.moodLog=p.moodLog||[]; state.wins=p.wins||[];}}catch(e){} }
+
+/* ---------- routing ---------- */
+function go(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  const el=document.getElementById(id); el.classList.add('active');
+  el.querySelectorAll('.stagger').forEach(g=>{g.style.animation='none';g.offsetHeight;g.style.animation=''});
+  document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('on', b.dataset.s===id));
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+/* ---------- greeting by time ---------- */
+(function(){
+  const h=new Date().getHours();
+  let g = h<5?'Still up? <em>That\'s okay.</em>' : h<12?'Good morning. <em>You made it here.</em>'
+        : h<17?'Hey. <em>Let\'s take a breath.</em>' : h<22?'Evening. <em>You can slow down now.</em>'
+        : 'Late one. <em>Be gentle with yourself.</em>';
+  document.getElementById('greeting').innerHTML = g;
+})();
+
+/* ---------- mood ---------- */
+const moodReplies={
+  light:"Love that. While it's light, this is a great moment to <b>dump</b> a few things so future-you stays light too.",
+  okay:"Okay is a perfectly good place to be. Want to <b>catch a win</b> or just <b>dump</b> what's on your mind?",
+  full:"A full head is heavy. The <b>Brain Dump</b> exists for exactly this — let's get some of it out.",
+  heavy:"That's a lot to carry. No fixing required right now — maybe just <b>one breath</b> in Calm a Spiral.",
+  numb:"Numb is allowed too. Nothing to perform here. If you want, just <b>name the feeling</b> — gently, no pressure."
+};
+document.querySelectorAll('#moods .m').forEach(m=>{
+  m.onclick=()=>{
+    document.querySelectorAll('#moods .m').forEach(x=>x.classList.remove('sel'));
+    m.classList.add('sel'); state.mood=m.dataset.k;
+    state.moodLog.push({ts:Date.now(),mood:m.dataset.k}); if(state.moodLog.length>400)state.moodLog.shift();
+    const r=document.getElementById('moodReply'); r.innerHTML=moodReplies[m.dataset.k]; r.classList.add('show'); save();
+    if(typeof renderPatterns==='function')renderPatterns();
+  };
+});
+
+/* ---------- toast + confetti ---------- */
+let toastT;
+function toast(msg){
+  const t=document.getElementById('toast'); t.innerHTML=msg; t.classList.add('show');
+  clearTimeout(toastT); toastT=setTimeout(()=>t.classList.remove('show'),2600);
+}
+function celebrate(){
+  const c=document.getElementById('confetti'); const cols=['#CD8265','#E3B071','#8FA887','#A99CC0','#EFC3AC'];
+  for(let i=0;i<46;i++){const p=document.createElement('div');p.className='cf';
+    p.style.left=Math.random()*100+'vw';p.style.top='-20px';p.style.background=cols[i%cols.length];
+    p.style.animationDuration=(2.4+Math.random()*1.8)+'s';p.style.animationDelay=(Math.random()*.3)+'s';
+    p.style.transform='rotate('+Math.random()*360+'deg)';c.appendChild(p);setTimeout(()=>p.remove(),4600);}
+}
+
+/* ---------- BRAIN DUMP ---------- */
+document.getElementById('dumpField').addEventListener('keydown',e=>{if(e.key==='Enter')addThought();});
+function addThought(){
+  const f=document.getElementById('dumpField'); const v=f.value.trim(); if(!v)return;
+  state.thoughts.push(v); f.value=''; renderThoughts(); save();
+}
+function renderThoughts(){
+  updateDumpFresh();
+  const wrap=document.getElementById('thoughts'); const empty=document.getElementById('dumpEmpty');
+  wrap.querySelectorAll('.thought').forEach(t=>t.remove());
+  if(state.thoughts.length===0){empty.style.display='';return;} empty.style.display='none';
+  state.thoughts.forEach((t,i)=>{
+    const d=document.createElement('div'); d.className='thought';
+    d.innerHTML=`<span class="txt">${esc(t)}</span><div class="tags">
+      <button class="tg do" title="Do" onclick="sortThought(${i},'do')">✅</button>
+      <button class="tg decide" title="Decide" onclick="sortThought(${i},'decide')">🤔</button>
+      <button class="tg let" title="Let go" onclick="sortThought(${i},'let')">🍃</button>
+      <button class="tg feel" title="Just a feeling" onclick="sortThought(${i},'feel')">💗</button></div>`;
+    wrap.appendChild(d);
+  });
+}
+function sortThought(i,bucket){
+  const t=state.thoughts.splice(i,1)[0]; state.sorted[bucket].push(t);
+  renderThoughts(); renderBuckets(); document.getElementById('sortPanel').style.display='block';
+  updateDumpFresh();
+  const names={do:'the Do pile',decide:'things to decide',let:'let go 🍃',feel:'just a feeling — that\'s valid'};
+  toast('Sorted → '+names[bucket]); save();
+}
+function updateDumpFresh(){
+  const any = state.thoughts.length || ['do','decide','let','feel'].some(b=>state.sorted[b].length);
+  const row=document.getElementById('dumpFreshRow'); if(row) row.style.display = any?'flex':'none';
+}
+function clearDump(){
+  if(!confirm('Start a fresh page? This clears your loose thoughts and the sorted piles. It can\u2019t be undone.'))return;
+  state.thoughts=[]; state.sorted={do:[],decide:[],let:[],feel:[]};
+  save(); renderThoughts(); renderBuckets();
+  document.getElementById('sortPanel').style.display='none';
+  updateDumpFresh(); toast('Fresh page 🪶');
+}
+function renderBuckets(){
+  ['do','decide','let','feel'].forEach(b=>{
+    const ul=document.getElementById('b-'+b);
+    ul.innerHTML = state.sorted[b].length? state.sorted[b].map(x=>`<li>${esc(x)}</li>`).join('') : '<li class="none">—</li>';
+  });
+}
+function esc(s){return s.replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+
+/* ---------- CALM A SPIRAL (breathing + steps, merged) ---------- */
+const cues=[['Breathe in…',4000],['Hold…',2000],['Breathe out…',5000]]; let ci=0,breathTimer;
+function runBreath(){const c=document.getElementById('breathCue'); if(!c)return; function tick(){c.textContent=cues[ci][0];
+  breathTimer=setTimeout(()=>{ci=(ci+1)%cues.length;tick();},cues[ci][1]);}tick();}
+runBreath();
+let spiralType='';let spiralSaved=false;
+const spiralReflect={
+  'Happening now':'Okay — it\u2019s real and here. We can meet it with one small move.',
+  'A what-if about later':'A what-if hasn\u2019t happened yet. Your brain is time-travelling — let\u2019s gently come back to now.',
+  'A bit of both':'Some real, some maybe. We\u2019ll handle the real part and let the maybe wait.'
+};
+function pickSpiral(el,val){
+  el.parentElement.querySelectorAll('.chip').forEach(c=>c.classList.remove('sel'));
+  el.classList.add('sel'); spiralType=val;
+  document.getElementById('sp_reflect').textContent=spiralReflect[val]||'';
+}
+function spiralStep(n){
+  document.querySelectorAll('#spiral .step').forEach(s=>s.classList.remove('active'));
+  document.getElementById('s'+n).classList.add('active');
+  document.querySelectorAll('#spiralDots .dot').forEach((d,i)=>d.classList.toggle('on',i<n));
+  if(n===5){
+    const what=document.getElementById('sp_what').value.trim();
+    const stepv=document.getElementById('sp_step').value.trim();
+    document.getElementById('rsp_what').textContent=what||'—';
+    document.getElementById('rsp_type').textContent=spiralType||'—';
+    document.getElementById('rsp_step').textContent=stepv||'—';
+    celebrate();
+    if(!spiralSaved && (what||stepv)){
+      let txt='🌀 Was spiraling: '+(what||'—');
+      if(spiralType) txt+='\nIt was: '+spiralType;
+      if(stepv) txt+='\nMy one small step: '+stepv;
+      state.journal.push({id:Date.now(),ts:Date.now(),text:txt,kind:'spiral'});
+      spiralSaved=true; save(); renderHistory(); renderPatterns(); updateBanner();
+    }
+  }
+}
+function resetSpiral(){
+  ['sp_what','sp_step'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('sp_reflect').textContent=''; spiralType=''; spiralSaved=false;
+  document.querySelectorAll('#s3 .chip').forEach(c=>c.classList.remove('sel'));
+  spiralStep(1);
+}
+
+/* ---------- FEELINGS ---------- */
+const feelings={
+  '😣 Anxious':['On edge','Dread','Restless','Panicky','Worried'],
+  '😞 Down':['Sad','Empty','Hopeless','Lonely','Flat'],
+  '😤 Angry':['Frustrated','Resentful','Irritable','Let down','Done'],
+  '😵‍💫 Overwhelmed':['Scattered','Too much','Foggy','Stretched thin','Frozen'],
+  '😶 Numb':['Disconnected','Tired of it','Blank','Going through motions'],
+  '🌤️ Lighter':['Hopeful','Calm-ish','Relieved','Okay','Quietly proud']
+};
+let feelCore='',feelNuance='';
+function buildFeel(){
+  const c=document.getElementById('feelCore'); c.innerHTML='';
+  Object.keys(feelings).forEach(k=>{const ch=document.createElement('div');ch.className='chip';ch.textContent=k;
+    ch.onclick=()=>{c.querySelectorAll('.chip').forEach(x=>x.classList.remove('sel'));ch.classList.add('sel');feelCore=k;
+      const nw=document.getElementById('feelNuanceWrap');nw.style.display='block';
+      const nn=document.getElementById('feelNuance');nn.innerHTML='';
+      feelings[k].forEach(n=>{const c2=document.createElement('div');c2.className='chip';c2.textContent=n;
+        c2.onclick=()=>{nn.querySelectorAll('.chip').forEach(x=>x.classList.remove('sel'));c2.classList.add('sel');feelNuance=n;
+          document.getElementById('feelBody').style.display='block';};nn.appendChild(c2);});
+    };c.appendChild(ch);});
+}
+buildFeel();
+function feelDone(){
+  const where=document.getElementById('feelWhere').value.trim(); const needs=document.getElementById('feelNeeds').value.trim();
+  let s=`Right now I feel <b style="color:var(--clay-deep)">${feelNuance||'something'}</b>`;
+  if(where) s+=`, and I feel it as <em>${esc(where)}</em>`;
+  s+='.'; if(needs) s+=` What it's asking for is <b style="color:var(--clay-deep)">${esc(needs)}</b>.`;
+  document.getElementById('feelSentence').innerHTML=s;
+  // save a plain-text version to History so feelings are kept and consultable
+  let txt='💗 Felt: '+(feelNuance||'something');
+  if(feelCore) txt+=' ('+feelCore.replace(/^[^ ]+ /,'')+')';
+  if(where) txt+='\nIn my body: '+where;
+  if(needs) txt+='\nIt was asking for: '+needs;
+  state.journal.push({id:Date.now(),ts:Date.now(),text:txt,kind:'feeling'});
+  save(); renderHistory(); renderPatterns(); updateBanner();
+  document.querySelector('#feel .field-label').style.display='none';
+  document.getElementById('feelCore').style.display='none';
+  document.getElementById('feelNuanceWrap').style.display='none';
+  document.getElementById('feelBody').style.display='none';
+  document.getElementById('feelResult').style.display='block';
+}
+function resetFeel(){feelCore='';feelNuance='';document.getElementById('feelWhere').value='';document.getElementById('feelNeeds').value='';
+  document.querySelector('#feel .field-label').style.display='';document.getElementById('feelCore').style.display='';
+  document.getElementById('feelResult').style.display='none';buildFeel();}
+
+/* ---------- WIN JAR ---------- */
+document.getElementById('winField').addEventListener('keydown',e=>{if(e.key==='Enter')addWin();});
+function addWin(){const f=document.getElementById('winField');const v=f.value.trim();if(!v)return;
+  state.wins.push(v);f.value='';renderWins();celebrate();toast('Caught it. ✨');save();}
+function renderWins(){
+  const list=document.getElementById('winsList');
+  if(state.wins.length===0){list.innerHTML='<div class="empty"><span class="e">🫙</span>Empty for now. The first one is the hardest to notice — drop it in.</div>';}
+  else{list.innerHTML=state.wins.slice().reverse().map(w=>`<div class="win-item"><span class="s">✨</span>${esc(w)}</div>`).join('');}
+  // fill jar (caps visually at 12)
+  const pct=Math.min(state.wins.length/12,1); const h=Math.round(pct*112); const y=150-h;
+  const fill=document.getElementById('jarFill'); fill.setAttribute('height',h); fill.setAttribute('y',y);
+  const stars=document.getElementById('jarStars'); stars.innerHTML='';
+  for(let i=0;i<Math.min(state.wins.length,12);i++){const cx=36+Math.random()*58;const cy=44+Math.random()*100;
+    stars.innerHTML+=`<text x="${cx}" y="${cy}" font-size="11" fill="#fff" opacity=".8">✦</text>`;}
+}
+
+/* ---------- NIGHT ---------- */
+function nightDone(){
+  const ok=document.getElementById('n_ok').value.trim();
+  const letgo=document.getElementById('n_letgo').value.trim();
+  const tom=document.getElementById('n_tom').value.trim();
+  if(ok||letgo||tom){
+    let parts=[];
+    if(ok)parts.push('🌼 Okay today: '+ok);
+    if(letgo)parts.push('🍃 Setting down: '+letgo);
+    if(tom)parts.push('🌱 Tomorrow\u2019s one thing: '+tom);
+    state.journal.push({id:Date.now(),ts:Date.now(),text:parts.join('\n'),kind:'night'});
+    renderHistory();
+  }
+  state.shown++; document.getElementById('shownCount').textContent=state.shown;
+  document.querySelectorAll('#night .panel')[0].style.display='none';
+  document.getElementById('nightResult').style.display='block'; celebrate(); renderPatterns(); save();
+}
+
+/* ---------- FREESTYLE JOURNAL ---------- */
+function fmtToday(){return new Date().toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric'});}
+function fmtStamp(ts){const d=new Date(ts);return d.toLocaleDateString(undefined,{month:'short',day:'numeric',year:'numeric'})+' · '+d.toLocaleTimeString(undefined,{hour:'numeric',minute:'2-digit'});}
+const diaryText=document.getElementById('diaryText');
+diaryText.addEventListener('input',()=>{const w=diaryText.value.trim().split(/\s+/).filter(Boolean).length;
+  document.getElementById('diaryCount').textContent=w+(w===1?' word':' words');});
+function saveJournal(){
+  const v=diaryText.value.trim(); if(!v){toast('Nothing to save yet 🪶');return;}
+  state.journal.push({id:Date.now(),ts:Date.now(),text:v,kind:'journal'});
+  diaryText.value=''; document.getElementById('diaryCount').textContent='0 words';
+  journalPos=0; save(); celebrate(); toast('Page saved 📖');
+  renderJournalPage(); renderHistory(); renderPatterns(); updateBanner();
+}
+
+/* ---------- the journal as a flippable book ---------- */
+let journalPos=0;      /* 0 = today's writing page; 1..N = past entries, newest→oldest */
+let flipping=false;
+function entryAtPos(pos){ return state.journal[state.journal.length - pos]; }
+function renderJournalPage(){
+  const total=state.journal.length+1;
+  const wp=document.getElementById('writePage'), rp=document.getElementById('readPage');
+  if(journalPos<0)journalPos=0; if(journalPos>state.journal.length)journalPos=state.journal.length;
+  if(journalPos===0){
+    wp.style.display=''; rp.style.display='none';
+    document.getElementById('bookCounter').textContent='Today · 1 / '+total;
+  }else{
+    const e=entryAtPos(journalPos);
+    wp.style.display='none'; rp.style.display='';
+    document.getElementById('readDate').textContent=kindIcon(e.kind)+fmtStamp(e.ts)+(e.edited?' · edited':'');
+    document.getElementById('readBody').textContent=e.text;
+    document.getElementById('readDelete').onclick=()=>deletePageEntry(e.id);
+    // reset to view mode (cancels any in-progress edit when flipping)
+    document.getElementById('readBody').style.display='';
+    document.getElementById('readEdit').style.display='none';
+    document.getElementById('readViewBtns').style.display='flex';
+    document.getElementById('readEditBtns').style.display='none';
+    document.getElementById('bookCounter').textContent=(journalPos+1)+' / '+total;
+  }
+  document.getElementById('btnNewer').disabled=(journalPos===0);
+  document.getElementById('btnOlder').disabled=(journalPos>=state.journal.length);
+}
+function turnPage(dir){
+  if(flipping)return;
+  const target=Math.min(Math.max(journalPos+dir,0),state.journal.length);
+  if(target===journalPos)return;
+  flipping=true;
+  const page=document.getElementById('journalPage');
+  page.classList.add('turning');                 /* swing edge-on */
+  setTimeout(()=>{                               /* swap while hidden */
+    journalPos=target; renderJournalPage();
+    page.classList.remove('turning');            /* settle the new page in */
+    setTimeout(()=>{flipping=false;},340);
+  },300);
+}
+function deletePageEntry(id){
+  if(!confirm('Delete this page? This can\u2019t be undone.'))return;
+  state.journal=state.journal.filter(x=>x.id!==id);
+  if(journalPos>state.journal.length)journalPos=state.journal.length;
+  save(); renderJournalPage(); renderHistory(); renderPatterns(); updateBanner();
+}
+function startEditEntry(){
+  const e=entryAtPos(journalPos); if(!e)return;
+  const ta=document.getElementById('readEdit'); ta.value=e.text;
+  document.getElementById('readBody').style.display='none';
+  ta.style.display=''; ta.focus();
+  document.getElementById('readViewBtns').style.display='none';
+  document.getElementById('readEditBtns').style.display='flex';
+}
+function cancelEditEntry(){ renderJournalPage(); }
+function saveEditEntry(){
+  const e=entryAtPos(journalPos); if(!e)return;
+  const v=document.getElementById('readEdit').value.trim();
+  if(!v){ if(confirm('This entry is now empty. Delete it instead?')) deletePageEntry(e.id); return; }
+  e.text=v; e.edited=Date.now();
+  save(); renderJournalPage(); renderHistory(); renderPatterns();
+  toast('Entry updated ✏️');
+}
+
+/* ---------- data-safety banner: incognito warning + gentle backup nudge ---------- */
+let bannerDismissed=false;
+function dismissBanner(){bannerDismissed=true;document.getElementById('dataBanner').style.display='none';}
+function updateBanner(){
+  const b=document.getElementById('dataBanner'); if(!b||bannerDismissed)return;
+  const icon=document.getElementById('bannerIcon'), txt=document.getElementById('bannerText'), act=document.getElementById('bannerAct');
+  const total=state.journal.length+state.wins.length;
+  if(!CAN_STORE){
+    b.className='banner warn'; b.style.display='flex'; icon.textContent='🔒';
+    txt.innerHTML='This browser isn\u2019t saving anything between visits — you may be in <b>private / incognito mode</b>, or storage is blocked. What you write will be lost when this tab closes unless you <b>export a backup</b> first.';
+    act.style.display=''; act.textContent='Export now'; return;
+  }
+  const since=(state.lastExportCount==null)?total:(total-state.lastExportCount);
+  const days=state.lastExportTs?(Date.now()-state.lastExportTs)/86400000:Infinity;
+  if(total>0 && (since>=6 || days>=21)){
+    b.className='banner nudge'; b.style.display='flex'; icon.textContent='🌱';
+    txt.innerHTML='You\u2019ve added a fair bit since your last backup. A quick <b>export</b> keeps your words safe if this browser ever clears its data — no rush, just a gentle nudge.';
+    act.style.display=''; act.textContent='Back up';
+  }else{ b.style.display='none'; }
+}
+
+/* ---------- HISTORY ---------- */
+function kindIcon(k){return k==='night'?'🌙 ':k==='feeling'?'💗 ':(k==='spiral'||k==='untangle')?'🌀 ':'';}
+function fmtMonth(ts){return new Date(ts).toLocaleDateString(undefined,{month:'long',year:'numeric'});}
+let histFilter='all';
+function setHistFilter(k,el){
+  histFilter=k;
+  document.querySelectorAll('#histFilters .chip').forEach(c=>c.classList.remove('sel'));
+  el.classList.add('sel'); renderHistory();
+}
+function highlight(escd,q){
+  if(!q)return escd;
+  try{ const rx=new RegExp('('+q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+')','gi'); return escd.replace(rx,'<mark>$1</mark>'); }
+  catch(e){ return escd; }
+}
+function renderHistory(){
+  const wrap=document.getElementById('historyList'); if(!wrap)return;
+  const sEl=document.getElementById('histSearch');
+  const q=(sEl?sEl.value:'').trim().toLowerCase();
+  const countEl=document.getElementById('histCount');
+  if(!state.journal.length){
+    wrap.innerHTML='<div class="empty"><span class="e">📖</span>No entries yet. Your Free Journal pages, Gentle Resets, feelings, and spirals all land here, newest first.</div>';
+    if(countEl)countEl.textContent=''; return;
+  }
+  let list=state.journal.slice().sort((a,b)=>b.ts-a.ts);
+  if(histFilter!=='all') list=list.filter(e=>(e.kind||'journal')===histFilter);
+  if(q) list=list.filter(e=>e.text.toLowerCase().includes(q));
+  if(countEl) countEl.textContent=list.length+(list.length===1?' entry':' entries');
+  if(!list.length){
+    wrap.innerHTML='<div class="empty"><span class="e">🔍</span>Nothing matches that yet. Try a different word or filter.</div>';
+    return;
+  }
+  let html='',lastMonth='';
+  list.forEach(e=>{
+    const m=fmtMonth(e.ts);
+    if(m!==lastMonth){ html+='<div class="hist-month">'+m+'</div>'; lastMonth=m; }
+    html+='<div class="entry"><div class="meta"><span class="date">'+kindIcon(e.kind)+fmtStamp(e.ts)+(e.edited?' · edited':'')
+      +'</span><button class="del" title="Delete entry" onclick="delEntry('+e.id+')">🗑</button></div>'
+      +'<div class="body">'+highlight(esc(e.text),q)+'</div></div>';
+  });
+  wrap.innerHTML=html;
+}
+function delEntry(id){
+  if(!confirm('Delete this entry? This can\u2019t be undone.'))return;
+  state.journal=state.journal.filter(e=>e.id!==id); save(); renderHistory(); renderPatterns(); updateBanner();
+}
+
+/* ---------- GENTLE PATTERNS (a kind mirror, never a diagnosis) ---------- */
+function renderPatterns(){
+  const el=document.getElementById('patterns'); if(!el)return;
+  const ent=state.journal.length, wins=state.wins.length, moods=state.moodLog.length;
+  if(ent+wins+moods===0){
+    el.innerHTML='<h3>Your gentle patterns</h3><p class="lead" style="margin-bottom:0">Once you\u2019ve journaled, checked in with a mood, or caught a few wins, a soft summary appears here — no charts to decode, just a kind reflection of how you\u2019ve been showing up.</p>';
+    return;
+  }
+  const moodLabels={light:'🌤️ light',okay:'🙂 okay',full:'😵‍💫 full',heavy:'🌧️ heavy',numb:'🫥 numb'};
+  const moodLines={
+    light:'lovely — there\u2019s been some ease to lean into.',
+    okay:'steady. Okay is an underrated, perfectly good place to be.',
+    full:'a lot to hold — and you kept showing up here anyway. That counts.',
+    heavy:'heavy lately. That you keep returning to this space says something gentle and strong about you.',
+    numb:'flat or far-away at times. Numb days are still days you showed up — be soft with yourself.'
+  };
+  let rows='';
+  // stat tiles
+  rows+=`<div class="pat-stats">
+    <div class="stat"><b>${ent}</b><span>journal ${ent===1?'entry':'entries'}</span></div>
+    <div class="stat"><b>${wins}</b><span>wins caught</span></div>
+    <div class="stat"><b>${state.shown}</b><span>times shown up</span></div></div>`;
+  // top mood
+  if(moods){
+    const c={}; state.moodLog.forEach(m=>c[m.mood]=(c[m.mood]||0)+1);
+    const top=Object.keys(c).sort((a,b)=>c[b]-c[a])[0];
+    rows+=`<div class="pat-row"><span class="pi">💭</span><div>Most check-ins lately have felt <b>${moodLabels[top]||top}</b> — ${moodLines[top]||''}</div></div>`;
+  }
+  // time of day
+  const times=[...state.journal.map(e=>e.ts),...state.moodLog.map(m=>m.ts)];
+  if(times.length>=3){
+    const b={morning:0,afternoon:0,evening:0,'late night':0};
+    times.forEach(ts=>{const h=new Date(ts).getHours();
+      b[h<5?'late night':h<12?'morning':h<17?'afternoon':h<22?'evening':'late night']++;});
+    const when=Object.keys(b).sort((x,y)=>b[y]-b[x])[0];
+    const whenLine={morning:'Mornings seem to be your moment to land here.',afternoon:'You tend to reach for this space mid-day.',evening:'Evenings are when you most often check in — a nice way to set the day down.','late night':'You often show up late at night. If your brain runs loudest then, the Brain Dump is here for it.'};
+    rows+=`<div class="pat-row"><span class="pi">🕊️</span><div>${whenLine[when]}</div></div>`;
+  }
+  // wins encouragement
+  if(wins>=3){
+    rows+=`<div class="pat-row"><span class="pi">✨</span><div>You\u2019ve caught <b>${wins}</b> wins your brain might otherwise have deleted. Proof, not pressure.</div></div>`;
+  }
+  el.innerHTML=`<h3>Your gentle patterns</h3><p class="lead">A soft read on the last little while.</p>${rows}
+    <p class="pat-note">This is a gentle mirror, not a measurement or a diagnosis — just patterns, held kindly.</p>`;
+}
+
+/* ---------- EXPORT / IMPORT (works everywhere, the cross-device backup) ---------- */
+function exportData(){
+  try{
+    const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'});
+    const url=URL.createObjectURL(blob); const a=document.createElement('a');
+    a.href=url; a.download='quiet-journal-backup-'+new Date().toISOString().slice(0,10)+'.json';
+    document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+    state.lastExportTs=Date.now(); state.lastExportCount=state.journal.length+state.wins.length; save();
+    toast('Backup downloaded 💾'); updateBanner();
+  }catch(e){toast('Couldn\u2019t export here — try the downloaded copy');}
+}
+function importData(input){
+  const file=input.files&&input.files[0]; if(!file)return;
+  const r=new FileReader();
+  r.onload=()=>{
+    try{
+      const d=JSON.parse(r.result);
+      if(typeof d!=='object'||d===null)throw 0;
+      Object.assign(state,d);
+      state.sorted=d.sorted||{do:[],decide:[],let:[],feel:[]};
+      state.journal=d.journal||[]; state.wins=d.wins||[]; state.moodLog=d.moodLog||[]; state.thoughts=d.thoughts||[];
+      save(); renderAll(); toast('Your journal is back 🌱');
+    }catch(e){ toast('Hmm — that file didn\u2019t look like a Quiet backup'); }
+    input.value='';
+  };
+  r.readAsText(file);
+}
+
+/* ---------- render everything (used on load + import) ---------- */
+function renderAll(){
+  document.getElementById('shownCount').textContent=state.shown;
+  journalPos=0;
+  renderThoughts(); renderBuckets(); renderWins(); renderHistory(); renderPatterns();
+  renderJournalPage(); updateBanner();
+  if(state.sorted&&(state.sorted.do.length||state.sorted.decide.length||state.sorted.let.length||state.sorted.feel.length))
+    document.getElementById('sortPanel').style.display='block';
+}
+
+/* ---------- onboarding ---------- */
+let obStep=0; const OB_TOTAL=4;
+function obRender(){
+  const steps=document.querySelectorAll('#onboarding .onb-step');
+  steps.forEach((s,i)=>s.classList.toggle('active',i===obStep));
+  document.querySelectorAll('#obDots .d').forEach((d,i)=>d.classList.toggle('on',i===obStep));
+  document.getElementById('obBack').style.visibility = obStep===0?'hidden':'visible';
+  document.getElementById('obNext').textContent = obStep===OB_TOTAL-1 ? 'Start ✨' : 'Next →';
+}
+function openOnboarding(){ obStep=0; obRender(); document.getElementById('onboarding').classList.add('show'); }
+function obNext(){ if(obStep<OB_TOTAL-1){obStep++;obRender();} else obFinish(); }
+function obPrev(){ if(obStep>0){obStep--;obRender();} }
+function obFinish(){ document.getElementById('onboarding').classList.remove('show'); state.onboarded=true; save(); }
+
+/* init */
+load();
+document.getElementById('yr').textContent=new Date().getFullYear();
+document.getElementById('diaryDate').textContent=fmtToday();
+renderAll();
+if(!state.onboarded) setTimeout(openOnboarding,400);
+</script>
+</body>
+</html>

@@ -1,0 +1,16 @@
+{
+  "name": "Quiet — ADHD Reset Journal",
+  "short_name": "Quiet",
+  "description": "An interactive ADHD reset journal, brain dump and daily diary.",
+  "start_url": "index.html",
+  "scope": ".",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#FBF6EE",
+  "theme_color": "#FBF6EE",
+  "icons": [
+    { "src": "icon-light-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icon-light-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icon-light-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
