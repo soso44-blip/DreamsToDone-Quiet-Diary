@@ -178,10 +178,8 @@ textarea::placeholder,input::placeholder{color:var(--ink-faint)}
 .breath-wrap{text-align:center;padding:18px 0 6px}
 .orb{width:170px;height:170px;border-radius:50%;margin:6px auto 20px;position:relative;
   background:radial-gradient(circle at 38% 32%,#fff,var(--clay-soft) 60%,var(--clay) 110%);
-  box-shadow:0 0 60px -10px rgba(205,130,101,.55);animation:breathe 11s ease-in-out infinite}
-.orb::after{content:"";position:absolute;inset:-22px;border-radius:50%;border:1px solid var(--clay-soft);
-  animation:breathe 11s ease-in-out infinite;opacity:.5}
-@keyframes breathe{0%,100%{transform:scale(.78)}40%{transform:scale(1.12)}55%{transform:scale(1.12)}}
+  box-shadow:0 0 60px -10px rgba(205,130,101,.55);transform:scale(.78);will-change:transform}
+.orb::after{content:"";position:absolute;inset:-22px;border-radius:50%;border:1px solid var(--clay-soft);opacity:.5}
 .breath-cue{font-family:var(--serif);font-size:24px;color:var(--clay-deep);font-style:italic;min-height:30px}
 
 /* step flow */
@@ -363,7 +361,7 @@ mark{background:var(--gold-soft);color:inherit;border-radius:3px;padding:0 2px}
       <div class="mark"><span></span></div>
       <div><b>Quiet</b><small>nightfall edition</small></div>
     </div>
-    <div class="shown">🌱 shown up <b id="shownCount">7</b>×</div>
+    <div class="shown">🌱 shown up <b id="shownCount">0</b>×</div>
   </div>
 
   <!-- DATA-SAFETY BANNER (incognito warning + gentle backup nudge) -->
@@ -789,7 +787,7 @@ mark{background:var(--gold-soft);color:inherit;border-radius:3px;padding:0 2px}
    in History is the guaranteed way to move data between devices.)
    ============================================================ */
 const state = { mood:null, thoughts:[], sorted:{do:[],decide:[],let:[],feel:[]},
-                wins:[], journal:[], moodLog:[], shown:7, lastExportTs:null, lastExportCount:null, onboarded:false };
+                wins:[], journal:[], moodLog:[], shown:0, lastShownDay:null, lastExportTs:null, lastExportCount:null, onboarded:false };
 const CAN_STORE=(()=>{try{const k='__quiet_test';localStorage.setItem(k,'1');localStorage.removeItem(k);return true;}catch(e){return false;}})();
 let saveWarned=false;
 function save(){ if(!CAN_STORE)return; try{localStorage.setItem('quiet_dreamstodone',JSON.stringify(state)); saveWarned=false; }catch(e){
@@ -896,10 +894,30 @@ function renderBuckets(){
 function esc(s){return s.replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
 
 /* ---------- CALM A SPIRAL (breathing + steps, merged) ---------- */
-const cues=[['Breathe in…',4000],['Hold…',2000],['Breathe out…',5000]]; let ci=0,breathTimer;
-function runBreath(){const c=document.getElementById('breathCue'); if(!c)return; function tick(){c.textContent=cues[ci][0];
-  breathTimer=setTimeout(()=>{ci=(ci+1)%cues.length;tick();},cues[ci][1]);}tick();}
-runBreath();
+/* One time-source drives BOTH the circle and the text, recomputed every
+   animation frame from absolute elapsed time — so they can never drift apart. */
+let breathStart=null;
+function breathEase(x){return x<.5?2*x*x:1-Math.pow(-2*x+2,2)/2;}
+function breathTick(now){
+  const s1=document.getElementById('s1');
+  const orb=document.querySelector('#spiral .orb');
+  const cue=document.getElementById('breathCue');
+  if(s1 && orb && cue && s1.classList.contains('active')){
+    if(breathStart==null) breathStart=now;        // begin fresh on "Breathe in"
+    const t=(now-breathStart)%16000;              // box breathing: 4s in · 4s hold · 4s out · 4s hold
+    const MIN=0.78, MAX=1.12; let scale,label;
+    if(t<4000){ label='Breathe in…'; scale=MIN+(MAX-MIN)*breathEase(t/4000); }
+    else if(t<8000){ label='Hold…'; scale=MAX; }
+    else if(t<12000){ label='Breathe out…'; scale=MAX-(MAX-MIN)*breathEase((t-8000)/4000); }
+    else { label='Hold…'; scale=MIN; }
+    orb.style.transform='scale('+scale.toFixed(4)+')';
+    if(cue.textContent!==label) cue.textContent=label;
+  } else {
+    breathStart=null;                             // restart next time the breath step opens
+  }
+  requestAnimationFrame(breathTick);
+}
+requestAnimationFrame(breathTick);
 let spiralType='';let spiralSaved=false;
 const spiralReflect={
   'Happening now':'Okay — it\u2019s real and here. We can meet it with one small move.',
@@ -1012,7 +1030,6 @@ function nightDone(){
     state.journal.push({id:Date.now(),ts:Date.now(),text:parts.join('\n'),kind:'night'});
     renderHistory();
   }
-  state.shown++; document.getElementById('shownCount').textContent=state.shown;
   document.querySelectorAll('#night .panel')[0].style.display='none';
   document.getElementById('nightResult').style.display='block'; celebrate(); renderPatterns(); save();
 }
@@ -1027,7 +1044,7 @@ function saveJournal(){
   const v=diaryText.value.trim(); if(!v){toast('Nothing to save yet 🪶');return;}
   state.journal.push({id:Date.now(),ts:Date.now(),text:v,kind:'journal'});
   diaryText.value=''; document.getElementById('diaryCount').textContent='0 words';
-  journalPos=0; save(); celebrate(); toast('Page saved 📖');
+  journalPos=1; save(); celebrate(); toast('Saved 📖 — tap ✏️ Edit to change it');
   renderJournalPage(); renderHistory(); renderPatterns(); updateBanner();
 }
 
@@ -1262,6 +1279,7 @@ function obFinish(){ document.getElementById('onboarding').classList.remove('sho
 
 /* init */
 load();
+(function(){var today=new Date().toDateString(); if(state.lastShownDay!==today){ state.shown=(state.shown||0)+1; state.lastShownDay=today; save(); }})();
 document.getElementById('yr').textContent=new Date().getFullYear();
 document.getElementById('diaryDate').textContent=fmtToday();
 renderAll();
