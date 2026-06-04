@@ -202,6 +202,10 @@ textarea::placeholder,input::placeholder{color:var(--ink-faint)}
 .win-item{background:var(--paper);border:1px solid var(--line);border-radius:13px;padding:11px 14px;font-size:14px;
   display:flex;gap:9px;align-items:center;animation:rise .4s both}
 .win-item .s{color:var(--gold)}
+.win-item .wt{flex:1}
+.win-item .wd{color:var(--ink-faint);font-size:12px;white-space:nowrap}
+.win-item .wx{border:none;background:none;color:var(--ink-faint);cursor:pointer;font-size:13px;padding:2px 5px;border-radius:8px;line-height:1}
+.win-item .wx:hover{color:var(--clay-deep);background:var(--paper-2)}
 
 /* toast / celebrate */
 .toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%) translateY(120px);
@@ -690,6 +694,7 @@ mark{background:var(--gold-soft);color:inherit;border-radius:3px;padding:0 2px}
       <div class="chip" onclick="setHistFilter('feeling',this)">💗 Feelings</div>
       <div class="chip" onclick="setHistFilter('spiral',this)">🌀 Spirals</div>
       <div class="chip" onclick="setHistFilter('night',this)">🌙 Resets</div>
+      <div class="chip" onclick="setHistFilter('win',this)">✨ Wins</div>
     </div>
     <div id="historyList"></div>
 
@@ -794,7 +799,8 @@ function save(){ if(!CAN_STORE)return; try{localStorage.setItem('quiet_dreamstod
   if(!saveWarned){ saveWarned=true; try{toast('This browser\u2019s storage is full — please export a backup to keep your entries safe');}catch(_){}}
 } }
 function load(){ if(!CAN_STORE)return; try{const d=localStorage.getItem('quiet_dreamstodone'); if(d){const p=JSON.parse(d);Object.assign(state,p);
-  state.sorted=p.sorted||{do:[],decide:[],let:[],feel:[]}; state.journal=p.journal||[]; state.moodLog=p.moodLog||[]; state.wins=p.wins||[];}}catch(e){} }
+  state.sorted=p.sorted||{do:[],decide:[],let:[],feel:[]}; state.journal=p.journal||[]; state.moodLog=p.moodLog||[];
+  state.wins=(p.wins||[]).map((w,i,arr)=> (typeof w==='string') ? {id:uid()+i, ts:Date.now()-(arr.length-1-i)*3600000, text:w} : w);}}catch(e){} }
 
 /* ---------- routing ---------- */
 function go(id){
@@ -826,11 +832,24 @@ document.querySelectorAll('#moods .m').forEach(m=>{
   m.onclick=()=>{
     document.querySelectorAll('#moods .m').forEach(x=>x.classList.remove('sel'));
     m.classList.add('sel'); state.mood=m.dataset.k;
-    state.moodLog.push({ts:Date.now(),mood:m.dataset.k}); if(state.moodLog.length>400)state.moodLog.shift();
+    const today=new Date().toDateString();
+    const ix=state.moodLog.map(e=>new Date(e.ts).toDateString()).lastIndexOf(today);
+    if(ix>=0){ state.moodLog[ix]={ts:Date.now(),mood:m.dataset.k}; }   // update today's check-in, don't stack
+    else { state.moodLog.push({ts:Date.now(),mood:m.dataset.k}); if(state.moodLog.length>400)state.moodLog.shift(); }
     const r=document.getElementById('moodReply'); r.innerHTML=moodReplies[m.dataset.k]; r.classList.add('show'); save();
     if(typeof renderPatterns==='function')renderPatterns();
   };
 });
+function renderMood(){
+  const today=new Date().toDateString();
+  const todays=state.moodLog.filter(e=>new Date(e.ts).toDateString()===today);
+  if(!todays.length)return;
+  const k=todays[todays.length-1].mood;
+  const m=document.querySelector('#moods .m[data-k="'+k+'"]');
+  if(!m)return;
+  document.querySelectorAll('#moods .m').forEach(x=>x.classList.remove('sel')); m.classList.add('sel'); state.mood=k;
+  const r=document.getElementById('moodReply'); if(r){ r.innerHTML=moodReplies[k]; r.classList.add('show'); }
+}
 
 /* ---------- toast + confetti ---------- */
 let toastT;
@@ -1004,11 +1023,12 @@ function resetFeel(){feelCore='';feelNuance='';document.getElementById('feelWher
 /* ---------- WIN JAR ---------- */
 document.getElementById('winField').addEventListener('keydown',e=>{if(e.key==='Enter')addWin();});
 function addWin(){const f=document.getElementById('winField');const v=f.value.trim();if(!v)return;
-  state.wins.push(v);f.value='';renderWins();celebrate();toast('Caught it. ✨');save();}
+  state.wins.push({id:uid(),ts:Date.now(),text:v});f.value='';renderWins();renderHistory();renderPatterns();celebrate();toast('Caught it. ✨');save();}
+function delWin(id){ state.wins=state.wins.filter(w=>w.id!==id); save(); renderWins(); renderHistory(); renderPatterns(); updateBanner(); }
 function renderWins(){
   const list=document.getElementById('winsList');
   if(state.wins.length===0){list.innerHTML='<div class="empty"><span class="e">🫙</span>Empty for now. The first one is the hardest to notice — drop it in.</div>';}
-  else{list.innerHTML=state.wins.slice().reverse().map(w=>`<div class="win-item"><span class="s">✨</span>${esc(w)}</div>`).join('');}
+  else{list.innerHTML=state.wins.slice().reverse().map(w=>`<div class="win-item"><span class="s">✨</span><span class="wt">${esc(w.text)}</span><span class="wd">${dayLabel(w.ts)}</span><button class="wx" title="Remove this win" onclick="delWin(${w.id})">✕</button></div>`).join('');}
   // fill jar (caps visually at 12)
   const pct=Math.min(state.wins.length/12,1); const h=Math.round(pct*112); const y=150-h;
   const fill=document.getElementById('jarFill'); fill.setAttribute('height',h); fill.setAttribute('y',y);
@@ -1037,6 +1057,14 @@ function nightDone(){
 /* ---------- FREESTYLE JOURNAL ---------- */
 function fmtToday(){return new Date().toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric'});}
 function fmtStamp(ts){const d=new Date(ts);return d.toLocaleDateString(undefined,{month:'short',day:'numeric',year:'numeric'})+' · '+d.toLocaleTimeString(undefined,{hour:'numeric',minute:'2-digit'});}
+function uid(){return Date.now()*1000+Math.floor(Math.random()*1000);}
+function dayLabel(ts){
+  const a=new Date(ts); a.setHours(0,0,0,0); const n=new Date(); n.setHours(0,0,0,0);
+  const diff=Math.round((n-a)/86400000);
+  if(diff<=0)return 'today'; if(diff===1)return 'yesterday';
+  if(diff<7)return new Date(ts).toLocaleDateString(undefined,{weekday:'short'});
+  return new Date(ts).toLocaleDateString(undefined,{month:'short',day:'numeric'});
+}
 const diaryText=document.getElementById('diaryText');
 diaryText.addEventListener('input',()=>{const w=diaryText.value.trim().split(/\s+/).filter(Boolean).length;
   document.getElementById('diaryCount').textContent=w+(w===1?' word':' words');});
@@ -1134,7 +1162,7 @@ function updateBanner(){
 }
 
 /* ---------- HISTORY ---------- */
-function kindIcon(k){return k==='night'?'🌙 ':k==='feeling'?'💗 ':(k==='spiral'||k==='untangle')?'🌀 ':'';}
+function kindIcon(k){return k==='night'?'🌙 ':k==='feeling'?'💗 ':(k==='spiral'||k==='untangle')?'🌀 ':k==='win'?'✨ ':'';}
 function fmtMonth(ts){return new Date(ts).toLocaleDateString(undefined,{month:'long',year:'numeric'});}
 let histFilter='all';
 function setHistFilter(k,el){
@@ -1152,11 +1180,13 @@ function renderHistory(){
   const sEl=document.getElementById('histSearch');
   const q=(sEl?sEl.value:'').trim().toLowerCase();
   const countEl=document.getElementById('histCount');
-  if(!state.journal.length){
-    wrap.innerHTML='<div class="empty"><span class="e">📖</span>No entries yet. Your Free Journal pages, Gentle Resets, feelings, and spirals all land here, newest first.</div>';
+  if(!state.journal.length && !state.wins.length){
+    wrap.innerHTML='<div class="empty"><span class="e">📖</span>No entries yet. Your journal pages, gentle resets, feelings, spirals, and wins all land here, newest first.</div>';
     if(countEl)countEl.textContent=''; return;
   }
-  let list=state.journal.slice().sort((a,b)=>b.ts-a.ts);
+  let list=state.journal.slice();
+  state.wins.forEach(w=>list.push({id:w.id, ts:w.ts, kind:'win', text:w.text}));
+  list.sort((a,b)=>b.ts-a.ts);
   if(histFilter!=='all') list=list.filter(e=>(e.kind||'journal')===histFilter);
   if(q) list=list.filter(e=>e.text.toLowerCase().includes(q));
   if(countEl) countEl.textContent=list.length+(list.length===1?' entry':' entries');
@@ -1169,14 +1199,16 @@ function renderHistory(){
     const m=fmtMonth(e.ts);
     if(m!==lastMonth){ html+='<div class="hist-month">'+m+'</div>'; lastMonth=m; }
     html+='<div class="entry"><div class="meta"><span class="date">'+kindIcon(e.kind)+fmtStamp(e.ts)+(e.edited?' · edited':'')
-      +'</span><button class="del" title="Delete entry" onclick="delEntry('+e.id+')">🗑</button></div>'
+      +'</span><button class="del" title="Delete entry" onclick="delEntry('+e.id+',\''+(e.kind||'journal')+'\')">🗑</button></div>'
       +'<div class="body">'+highlight(esc(e.text),q)+'</div></div>';
   });
   wrap.innerHTML=html;
 }
-function delEntry(id){
+function delEntry(id, kind){
   if(!confirm('Delete this entry? This can\u2019t be undone.'))return;
-  state.journal=state.journal.filter(e=>e.id!==id); save(); renderHistory(); renderPatterns(); updateBanner();
+  if(kind==='win'){ state.wins=state.wins.filter(w=>w.id!==id); }
+  else { state.journal=state.journal.filter(e=>e.id!==id); }
+  save(); renderWins(); renderHistory(); renderPatterns(); updateBanner();
 }
 
 /* ---------- GENTLE PATTERNS (a kind mirror, never a diagnosis) ---------- */
@@ -1245,7 +1277,7 @@ function importData(input){
       if(typeof d!=='object'||d===null)throw 0;
       Object.assign(state,d);
       state.sorted=d.sorted||{do:[],decide:[],let:[],feel:[]};
-      state.journal=d.journal||[]; state.wins=d.wins||[]; state.moodLog=d.moodLog||[]; state.thoughts=d.thoughts||[];
+      state.journal=d.journal||[]; state.wins=(d.wins||[]).map((w,i,arr)=> typeof w==='string' ? {id:uid()+i, ts:Date.now()-(arr.length-1-i)*3600000, text:w} : w); state.moodLog=d.moodLog||[]; state.thoughts=d.thoughts||[];
       save(); renderAll(); toast('Your journal is back 🌱');
     }catch(e){ toast('Hmm — that file didn\u2019t look like a Quiet backup'); }
     input.value='';
@@ -1257,7 +1289,7 @@ function importData(input){
 function renderAll(){
   document.getElementById('shownCount').textContent=state.shown;
   journalPos=0;
-  renderThoughts(); renderBuckets(); renderWins(); renderHistory(); renderPatterns();
+  renderThoughts(); renderBuckets(); renderWins(); renderHistory(); renderPatterns(); renderMood();
   renderJournalPage(); updateBanner();
   if(state.sorted&&(state.sorted.do.length||state.sorted.decide.length||state.sorted.let.length||state.sorted.feel.length))
     document.getElementById('sortPanel').style.display='block';
