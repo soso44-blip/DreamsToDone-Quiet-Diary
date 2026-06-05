@@ -62,6 +62,11 @@ body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:9999;o
 .brand small{display:block;font-size:10.5px;color:var(--ink-faint);letter-spacing:.18em;text-transform:uppercase;font-weight:600;margin-top:-2px}
 .shown{font-size:12.5px;color:var(--ink-soft);background:var(--card);border:1px solid var(--line);
   padding:8px 14px;border-radius:30px;font-weight:600;box-shadow:var(--shadow-sm)}
+.top-right{display:flex;align-items:center;gap:9px}
+.icon-btn{width:38px;height:38px;border-radius:50%;border:1px solid var(--line);background:var(--card);cursor:pointer;
+  font-size:16px;line-height:1;color:var(--ink-soft);box-shadow:var(--shadow-sm);display:flex;align-items:center;justify-content:center;
+  transition:transform .18s,border-color .18s,color .18s}
+.icon-btn:hover{transform:translateY(-2px);border-color:var(--clay-soft);color:var(--clay-deep)}
 .shown b{color:var(--clay-deep)}
 
 /* ---------- screens ---------- */
@@ -365,7 +370,10 @@ mark{background:var(--gold-soft);color:inherit;border-radius:3px;padding:0 2px}
       <div class="mark"><span></span></div>
       <div><b>Quiet</b><small>nightfall edition</small></div>
     </div>
-    <div class="shown">🌱 shown up <b id="shownCount">0</b>×</div>
+    <div class="top-right">
+      <button class="icon-btn" id="backupBtn" onclick="openBackup()" title="Back up &amp; restore" aria-label="Back up and restore">💾</button>
+      <div class="shown">🌱 shown up <b id="shownCount">0</b>×</div>
+    </div>
   </div>
 
   <!-- DATA-SAFETY BANNER (incognito warning + gentle backup nudge) -->
@@ -697,17 +705,6 @@ mark{background:var(--gold-soft);color:inherit;border-radius:3px;padding:0 2px}
       <div class="chip" onclick="setHistFilter('win',this)">✨ Wins</div>
     </div>
     <div id="historyList"></div>
-
-    <div class="sec-label" style="margin:26px 4px 14px">Your data</div>
-    <div class="data-card">
-      <p style="font-size:14px;color:var(--ink-soft);line-height:1.55">Switching phone or browser? Download a backup file, then import it on your new device. Your words stay on your device and are never uploaded anywhere — exporting is the only way they leave.</p>
-      <div class="data-btns">
-        <button class="btn btn-primary" onclick="exportData()">💾 Export backup</button>
-        <label class="btn btn-ghost" style="cursor:pointer">📂 Import backup
-          <input type="file" accept="application/json,.json" onchange="importData(this)" style="display:none">
-        </label>
-      </div>
-    </div>
   </section>
 
   <!-- ============ FOOTER ============ -->
@@ -728,6 +725,22 @@ mark{background:var(--gold-soft);color:inherit;border-radius:3px;padding:0 2px}
   <button data-s="win" onclick="go('win')"><span class="ni">✨</span>Wins</button>
   <button data-s="history" onclick="go('history')"><span class="ni">📖</span>History</button>
 </div></nav>
+
+<!-- BACKUP & RESTORE (opened from the discreet 💾 icon in the top bar) -->
+<div class="onb" id="backupModal" onclick="if(event.target===this)closeBackup()">
+  <div class="onb-card">
+    <h3>Back up &amp; restore</h3>
+    <p class="lead">Your words live only on this device — nothing is ever uploaded. A backup is a small file you can keep safe and bring to a new phone or browser whenever you like.</p>
+    <p id="backupStatus" style="font-size:13px;color:var(--ink-faint);margin:14px auto 0"></p>
+    <div class="data-btns" style="justify-content:center;margin-top:18px">
+      <button class="btn btn-primary" onclick="exportData()">💾 Export backup</button>
+      <label class="btn btn-ghost" style="cursor:pointer">📂 Import backup
+        <input type="file" accept="application/json,.json" onchange="importData(this)" style="display:none">
+      </label>
+    </div>
+    <p style="margin-top:20px"><button class="ob-link" onclick="closeBackup()">Close</button></p>
+  </div>
+</div>
 
 <!-- ONBOARDING -->
 <div class="onb" id="onboarding">
@@ -764,7 +777,7 @@ mark{background:var(--gold-soft);color:inherit;border-radius:3px;padding:0 2px}
       <h3>Yours, and only yours</h3>
       <p class="lead">Everything you write stays right here on your device — private, and never uploaded anywhere.</p>
       <div class="onb-feats" style="margin-top:16px">
-        <div class="onb-feat"><span class="fi">💾</span><div>The one little habit that keeps it safe: tap <b>Export</b> in History now and then to save a backup file (pop it in your cloud drive).</div></div>
+        <div class="onb-feat"><span class="fi">💾</span><div>The one little habit that keeps it safe: tap the <b>💾 icon</b> at the top now and then to save a backup file (pop it in your cloud drive).</div></div>
         <div class="onb-feat"><span class="fi">📂</span><div>New phone or browser? Just <b>Import</b> that file and everything's back. We'll give you a gentle nudge when it's a good time to back up.</div></div>
       </div>
     </div>
@@ -1266,6 +1279,7 @@ function exportData(){
     document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
     state.lastExportTs=Date.now(); state.lastExportCount=state.journal.length+state.wins.length; save();
     toast('Backup downloaded 💾'); updateBanner();
+    if(document.getElementById('backupModal').classList.contains('show')) openBackup();
   }catch(e){toast('Couldn\u2019t export here — try the downloaded copy');}
 }
 function importData(input){
@@ -1278,12 +1292,22 @@ function importData(input){
       Object.assign(state,d);
       state.sorted=d.sorted||{do:[],decide:[],let:[],feel:[]};
       state.journal=d.journal||[]; state.wins=(d.wins||[]).map((w,i,arr)=> typeof w==='string' ? {id:uid()+i, ts:Date.now()-(arr.length-1-i)*3600000, text:w} : w); state.moodLog=d.moodLog||[]; state.thoughts=d.thoughts||[];
-      save(); renderAll(); toast('Your journal is back 🌱');
+      save(); renderAll(); toast('Your journal is back 🌱'); closeBackup();
     }catch(e){ toast('Hmm — that file didn\u2019t look like a Quiet backup'); }
     input.value='';
   };
   r.readAsText(file);
 }
+function openBackup(){
+  const s=document.getElementById('backupStatus');
+  if(s){
+    if(state.lastExportTs){ const days=Math.floor((Date.now()-state.lastExportTs)/86400000);
+      s.textContent='Last backup: '+(days<=0?'today':days===1?'yesterday':days+' days ago')+'.'; }
+    else { s.textContent='You haven\u2019t made a backup yet — a good moment to start.'; }
+  }
+  document.getElementById('backupModal').classList.add('show');
+}
+function closeBackup(){ const m=document.getElementById('backupModal'); if(m)m.classList.remove('show'); }
 
 /* ---------- render everything (used on load + import) ---------- */
 function renderAll(){
