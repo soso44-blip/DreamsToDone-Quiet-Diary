@@ -1,46 +1,45 @@
-/* Quiet PWA service worker — offline app shell (v3) */
-const CACHE='quiet-v3';
+/* Quiet PWA service worker — offline app shell (v4).
+   Pages are served NETWORK-FIRST so the exact URL (light index.html OR dark.html)
+   always loads correctly when online. Offline, each page falls back ONLY to its
+   own cached copy — it never substitutes the other theme. Static assets are
+   cache-first so the app still works fully offline. */
+const CACHE='quiet-v4';
 const ASSETS=['.','index.html','dark.html',
   'manifest-light.webmanifest','manifest-dark.webmanifest',
   'icon-light-192.png','icon-light-512.png','apple-touch-icon-light.png',
   'icon-dark-192.png','icon-dark-512.png','apple-touch-icon-dark.png','favicon-48.png'];
 
-self.addEventListener('install',e=>{
-  e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS)).then(()=>self.skipWaiting()));
+self.addEventListener('install', function(e){
+  e.waitUntil(caches.open(CACHE).then(function(c){ return c.addAll(ASSETS); }).then(function(){ return self.skipWaiting(); }));
 });
-self.addEventListener('activate',e=>{
-  e.waitUntil(caches.keys()
-    .then(ks=>Promise.all(ks.map(k=>k!==CACHE&&caches.delete(k))))
-    .then(()=>self.clients.claim()));
+self.addEventListener('activate', function(e){
+  e.waitUntil(caches.keys().then(function(ks){
+    return Promise.all(ks.map(function(k){ if(k!==CACHE) return caches.delete(k); }));
+  }).then(function(){ return self.clients.claim(); }));
 });
-self.addEventListener('fetch',e=>{
-  const req=e.request;
+self.addEventListener('fetch', function(e){
+  var req=e.request;
   if(req.method!=='GET') return;
 
-  // PAGE LOADS: always go to the network first so the exact URL (light OR dark)
-  // is served fresh. Only fall back to the cache for THAT SAME page when offline —
-  // never substitute the other theme.
   if(req.mode==='navigate'){
-    e.respondWith((async()=>{
+    e.respondWith((async function(){
       try{
-        const res=await fetch(req);
-        try{ const u=new URL(req.url); if(u.origin===location.origin && res.ok){ const c=await caches.open(CACHE); c.put(req,res.clone()); } }catch(_){}
+        var res=await fetch(req);                       // online: always the real, exact URL
+        try{ var u=new URL(req.url); if(u.origin===location.origin && res.ok){ var c=await caches.open(CACHE); c.put(req,res.clone()); } }catch(_){}
         return res;
       }catch(_){
-        const same=await caches.match(req,{ignoreSearch:true});
-        return same || Response.error();
+        var same=await caches.match(req,{ignoreSearch:true});  // offline: ONLY this same page
+        return same || Response.error();                       // never serve the other theme
       }
     })());
     return;
   }
 
-  // STATIC ASSETS (icons, manifests): cache-first for speed/offline.
-  e.respondWith((async()=>{
-    const cached=await caches.match(req);
-    if(cached) return cached;
+  e.respondWith((async function(){
+    var cached=await caches.match(req); if(cached) return cached;
     try{
-      const res=await fetch(req);
-      try{ const u=new URL(req.url); if(u.origin===location.origin && res.ok){ const c=await caches.open(CACHE); c.put(req,res.clone()); } }catch(_){}
+      var res=await fetch(req);
+      try{ var u=new URL(req.url); if(u.origin===location.origin && res.ok){ var c=await caches.open(CACHE); c.put(req,res.clone()); } }catch(_){}
       return res;
     }catch(_){ return Response.error(); }
   })());
